@@ -31,7 +31,14 @@ function drush_tester_crawl($path) {
     module_enable(array('watchdog'));
   }
   drush_print('Starting test crawl of ' . $path);
-  module_invoke_all('tester_crawl', $path);
+  $items = module_invoke_all('tester_info');
+
+  foreach ($items as $name => $item) {
+    $function = $name . '_tester_crawl';
+    drush_print($item['description']);
+    $tests = $function($path);
+    drush_print_r($tests);
+  }
 
   if (!$status) {
     module_disable(array('watchdog'));
