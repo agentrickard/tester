@@ -12,10 +12,9 @@ function tester_tester_info() {
   $items['system'] = array(
     'description' => 'Testing base system URLs.',
     'module' => 'tester',
-    'file' => 'system.inc',
-    'dependencies' = array(),
+    'dependencies' => array(),
   );
-  return $info;
+  return $items;
 }
 
 

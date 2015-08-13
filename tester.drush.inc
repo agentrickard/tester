@@ -35,9 +35,18 @@ function drush_tester_crawl($path) {
 
   foreach ($items as $name => $item) {
     $function = $name . '_tester_crawl';
+    module_load_include('inc', $item['module'], 'includes/' . $name);
     drush_print($item['description']);
+    drush_print($function);
+    drush_print(function_exists($function));
     $tests = $function($path);
-    drush_print_r($tests);
+    foreach ($tests as $test) {
+      drush_print($test['message']);
+      foreach ($test['paths'] as $url) {
+        drush_print('Testing ' . $url);
+        drupal_http_request($url);
+      }
+    }
   }
 
   if (!$status) {
