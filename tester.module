@@ -14,6 +14,10 @@ function tester_tester_crawl($path) {
   $data = drupal_http_request($path);
   drush_print($path);
 
+  drush_print('Test 404 page');
+  $data = drupal_http_request($path . '/asdkjh234213h123asdasd');
+  drush_print($path . '/asdkjh234213h123asdasd');
+
   drush_print('Testing node paths.');
   $nodes = db_query("SELECT nid FROM {node} WHERE status > 0")->fetchAll();
   foreach ($nodes as $node) {
@@ -27,6 +31,5 @@ function tester_tester_crawl($path) {
     drush_print($path . url("user/$user->uid"));
     $data = drupal_http_request($path . url("user/$user->uid"));
   }
-
 
 }
