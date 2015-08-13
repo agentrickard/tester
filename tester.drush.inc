@@ -26,6 +26,14 @@ function tester_drush_command() {
  * Crawl a site.
  */
 function drush_tester_crawl($path) {
+  $status = module_exists('watchdog');
+  if (!$status) {
+    module_enable(array('watchdog'));
+  }
   drush_print('Starting test crawl of ' . $path);
   module_invoke_all('tester_crawl', $path);
+
+  if (!$status) {
+    module_disable(array('watchdog'));
+  }
 }
