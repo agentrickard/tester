@@ -2,5 +2,31 @@
 
 /**
  * @file
- * Empty module file.
+ * Base module file.
  */
+
+/**
+ * Implements hook_tester_crawl().
+ */
+function tester_tester_crawl($path) {
+  // TODO: Return an array instead?
+  drush_print('Testing home page.');
+  $data = drupal_http_request($path);
+  drush_print($path);
+
+  drush_print('Testing node paths.');
+  $nodes = db_query("SELECT nid FROM {node} WHERE status > 0")->fetchAll();
+  foreach ($nodes as $node) {
+    drush_print($path . url("node/$node->nid"));
+    $data = drupal_http_request($path . url("node/$node->nid"));
+  }
+
+  drush_print('Testing user paths.');
+  $users = db_query("SELECT uid FROM {users} WHERE status > 0")->fetchAll();
+  foreach ($users as $user) {
+    drush_print($path . url("user/$user->uid"));
+    $data = drupal_http_request($path . url("user/$user->uid"));
+  }
+
+
+}

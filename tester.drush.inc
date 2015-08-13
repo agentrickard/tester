@@ -27,10 +27,5 @@ function tester_drush_command() {
  */
 function drush_tester_crawl($path) {
   drush_print('Starting test crawl of ' . $path);
-  $data = drupal_http_request($path);
-  $nodes = db_query("SELECT nid FROM {node} WHERE status > 0")->fetchAll();
-  foreach ($nodes as $node) {
-    drush_print($path . url("node/$node->nid"));
-    $data = drupal_http_request($path . url("node/$node->nid"));
-  }
+  module_invoke_all('tester_crawl', $path);
 }
