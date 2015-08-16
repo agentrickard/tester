@@ -35,7 +35,17 @@ function drush_tester_crawl($base_path) {
   }
   drush_print('Clearing caches...');
   cache_clear_all();
+  drush_print('Truncating {watchdog}');
+  db_query('TRUNCATE {watchdog}');
   drush_print('Starting test crawl of ' . $base_path);
+
+  // Set watchdog variables.
+  global $conf;
+  $temp['dblog_row_limit'] = $conf['dblog_row_limit'];
+  $conf['dblog_row_limit'] = 0;
+  $temp['error_level'] = $conf['error_level'];
+  $conf['error_level'] = ERROR_REPORTING_DISPLAY_ALL;
+
   $items = module_invoke_all('tester_info');
 
   foreach ($items as $name => $item) {
@@ -80,6 +90,11 @@ function drush_tester_crawl($base_path) {
 
   tester_dblog_report();
 
+  // Reset vars.
+  $conf['dblog_row_limit'] = $temp['dblog_row_limit'];
+  $conf['error_level'] = $temp['error_level'];
+
+
   // @TODO: Possible teardown hook.
   if (!$status) {
     module_disable(array('dblog'));
@@ -90,8 +105,46 @@ function drush_tester_crawl($base_path) {
  * Generate the dblog report.
  */
 function tester_dblog_report() {
-  $bars = '=================';
+  $bars = '==================================================';
+
+  // All errors.
+
+  $errors = db_query("SELECT location, severity, message, variables FROM {watchdog} WHERE type = 'php'")->fetchAll();
+
   drush_print($bars);
-  drush_print('Test run finished');
+  drush_print('Complete error report: ' . count($errors) . ' errors');
   drush_print($bars);
+  $rows = array();
+  $rows[] = array('Location', 'Message');
+
+  foreach ($errors as $error) {
+    $rows[] = array($error->location, strip_tags(t($error->message, unserialize($error->variables))));
+  }
+  drush_print_table($rows, TRUE);
+
+  // Unique errors.
+
+  $errors_unique = db_query("SELECT message, location, severity, variables FROM {watchdog} WHERE type = 'php' GROUP BY message")->fetchAll();
+
+  drush_print($bars);
+  drush_print('Unique error report: ' . count($errors_unique) . ' unique errors');
+  drush_print($bars);
+  $rows = array();
+  $rows[] = array('Location', 'Message');
+
+  foreach ($errors_unique as $error) {
+    $rows[] = array($error->location, strip_tags(t($error->message, unserialize($error->variables))));
+  }
+
+  drush_print_table($rows, TRUE);
+
+  // Summary errors.
+
+  drush_print($bars);
+  drush_print('Summary error report');
+  drush_print($bars);
+
+  drush_print('Total errors: ' . count($errors));
+  drush_print('Unique errors: ' . count($errors_unique));
+
 }
