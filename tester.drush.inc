@@ -27,9 +27,9 @@ function tester_drush_command() {
  */
 function drush_tester_crawl($base_path) {
   // @TODO: Possible setup hook.
-  $status = module_exists('watchdog');
+  $status = module_exists('dblog');
   if (!$status) {
-    module_enable(array('watchdog'));
+    module_enable(array('dblog'));
   }
   drush_print('Clearing caches...');
   cache_clear_all();
@@ -72,6 +72,6 @@ function drush_tester_crawl($base_path) {
 
   // @TODO: Possible teardown hook.
   if (!$status) {
-    module_disable(array('watchdog'));
+    module_disable(array('dblog'));
   }
 }
