@@ -93,7 +93,7 @@ function drush_tester_crawl($base_path) {
   // Reset vars.
   $conf['dblog_row_limit'] = $temp['dblog_row_limit'];
   $conf['error_level'] = $temp['error_level'];
-
+  db_query('TRUNCATE {watchdog}');
 
   // @TODO: Possible teardown hook.
   if (!$status) {
