@@ -25,7 +25,7 @@ function tester_drush_command() {
 /**
  * Crawl a site.
  */
-function drush_tester_crawl($path) {
+function drush_tester_crawl($base_path) {
   // @TODO: Possible setup hook.
   $status = module_exists('watchdog');
   if (!$status) {
@@ -33,19 +33,20 @@ function drush_tester_crawl($path) {
   }
   drush_print('Clearing caches...');
   cache_clear_all();
-  drush_print('Starting test crawl of ' . $path);
+  drush_print('Starting test crawl of ' . $base_path);
   $items = module_invoke_all('tester_info');
 
   foreach ($items as $name => $item) {
     $function = $name . '_tester_crawl';
     module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
     drush_print($item['description']);
-    $tests = $function($path);
+    $tests = $function();
     foreach ($tests as $test) {
       if (!empty($test['prefix'])) {
         drush_print($test['prefix']);
       }
-      foreach ($test['paths'] as $url) {
+      foreach ($test['paths'] as $path) {
+        $url = $base_path . $path;
         drush_print('Testing ' . $url);
         // @TODO: perhaps just use CURL.
         drupal_http_request($url);

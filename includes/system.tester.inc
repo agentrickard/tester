@@ -8,14 +8,14 @@
 /**
  * Implements hook_tester_crawl().
  */
-function system_tester_crawl($path) {
+function system_tester_crawl() {
   $items['home'] = array(
     'prefix' => 'Testing home page',
-    'paths' => array($path),
+    'paths' => array(url('<front>')),
   );
   $items['404'] = array(
     'prefix' => 'Testing 404 page',
-    'paths' => array($path . '/1h237123gdjsadkjhasdb12e'),
+    'paths' => array('/1h237123gdjsadkjhasdb12e'),
   );
   return $items;
 }
