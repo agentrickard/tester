@@ -6,13 +6,30 @@
  */
 
 /**
+ * Implements hook_tester_info() {
+ */
+function tester_tester_info() {
+  $items['system'] = array(
+    'description' => 'Testing base system URLs.',
+    'module' => 'tester',
+    'dependencies' => array(),
+  );
+  $items['node'] = array(
+    'description' => 'Testing node pages.',
+    'module' => 'tester',
+    'dependencies' => array('node'),
+  );
+  return $items;
+}
+
+
+/**
  * Implements hook_tester_crawl().
  */
 function tester_tester_crawl($path) {
   // TODO: Return an array instead?
   drush_print('Testing home page.');
-  $data = drupal_http_request($path);
-  drush_print($path);
+
 
   drush_print('Test 404 page');
   $data = drupal_http_request($path . '/asdkjh234213h123asdasd');

@@ -26,6 +26,30 @@ function tester_drush_command() {
  * Crawl a site.
  */
 function drush_tester_crawl($path) {
+  $status = module_exists('watchdog');
+  if (!$status) {
+    module_enable(array('watchdog'));
+  }
   drush_print('Starting test crawl of ' . $path);
-  module_invoke_all('tester_crawl', $path);
+  $items = module_invoke_all('tester_info');
+
+  foreach ($items as $name => $item) {
+    $function = $name . '_tester_crawl';
+    module_load_include('inc', $item['module'], 'includes/' . $name);
+    drush_print($item['description']);
+    drush_print($function);
+    drush_print(function_exists($function));
+    $tests = $function($path);
+    foreach ($tests as $test) {
+      drush_print($test['message']);
+      foreach ($test['paths'] as $url) {
+        drush_print('Testing ' . $url);
+        drupal_http_request($url);
+      }
+    }
+  }
+
+  if (!$status) {
+    module_disable(array('watchdog'));
+  }
 }
