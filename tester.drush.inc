@@ -37,6 +37,19 @@ function drush_tester_crawl($base_path) {
   $items = module_invoke_all('tester_info');
 
   foreach ($items as $name => $item) {
+    // Ensure we need to run the tests based on dependencies.
+    $skip = FALSE;
+    if (!empty($item['dependencies'])) {
+      foreach ($item['dependencies'] as $module) {
+        if (!module_exists($module)) {
+          $skip = TRUE;
+          continue;
+        }
+      }
+    }
+    if ($skip) {
+      continue;
+    }
     $function = $name . '_tester_crawl';
     module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
     drush_print($item['description']);

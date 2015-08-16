@@ -14,6 +14,11 @@ function tester_tester_info() {
     'module' => 'tester',
     'dependencies' => array(),
   );
+  $items['menu'] = array(
+    'description' => 'Testing menu items.',
+    'module' => 'tester',
+    'dependencies' => array('menu'),
+  );
   $items['node'] = array(
     'description' => 'Testing node pages.',
     'module' => 'tester',
