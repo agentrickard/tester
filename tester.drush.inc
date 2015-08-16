@@ -26,6 +26,8 @@ function tester_drush_command() {
  * Crawl a site.
  */
 function drush_tester_crawl($base_path) {
+  $line = '-----------------';
+  $bars = '=================';
   // @TODO: Possible setup hook.
   $status = module_exists('dblog');
   if (!$status) {
@@ -52,11 +54,15 @@ function drush_tester_crawl($base_path) {
     }
     $function = $name . '_tester_crawl';
     module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
+    drush_print($bars);
     drush_print($item['description']);
+    drush_print($bars);
     $tests = $function();
     foreach ($tests as $test) {
       if (!empty($test['prefix'])) {
+        drush_print($line);
         drush_print($test['prefix']);
+        drush_print($line);
       }
       foreach ($test['paths'] as $path) {
         $url = $base_path . $path;
@@ -65,13 +71,27 @@ function drush_tester_crawl($base_path) {
         drupal_http_request($url);
       }
       if (!empty($test['suffix'])) {
+        drush_print($line);
         drush_print($test['suffix']);
+        drush_print($line);
       }
     }
   }
+
+  tester_dblog_report();
 
   // @TODO: Possible teardown hook.
   if (!$status) {
     module_disable(array('dblog'));
   }
+}
+
+/**
+ * Generate the dblog report.
+ */
+function tester_dblog_report() {
+  $bars = '=================';
+  drush_print($bars);
+  drush_print('Test run finished');
+  drush_print($bars);
 }
