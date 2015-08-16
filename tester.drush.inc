@@ -26,6 +26,7 @@ function tester_drush_command() {
  * Crawl a site.
  */
 function drush_tester_crawl($path) {
+  // @TODO: Possible setup hook.
   $status = module_exists('watchdog');
   if (!$status) {
     module_enable(array('watchdog'));
@@ -46,6 +47,7 @@ function drush_tester_crawl($path) {
       }
       foreach ($test['paths'] as $url) {
         drush_print('Testing ' . $url);
+        // @TODO: perhaps just use CURL.
         drupal_http_request($url);
       }
       if (!empty($test['suffix'])) {
@@ -54,6 +56,7 @@ function drush_tester_crawl($path) {
     }
   }
 
+  // @TODO: Possible teardown hook.
   if (!$status) {
     module_disable(array('watchdog'));
   }
