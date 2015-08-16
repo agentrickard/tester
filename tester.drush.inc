@@ -37,7 +37,7 @@ function drush_tester_crawl($path) {
 
   foreach ($items as $name => $item) {
     $function = $name . '_tester_crawl';
-    module_load_include('inc', $item['module'], 'includes/' . $name);
+    module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
     drush_print($item['description']);
     $tests = $function($path);
     foreach ($tests as $test) {
