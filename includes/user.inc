@@ -15,7 +15,6 @@ function user_tester_crawl($path) {
     $paths[] = $path . url("user/$user->uid");
   }
   $items['user'] = array(
-    'message' => 'Testing user paths.',
     'paths' => $paths,
   );
   return $items;

@@ -15,7 +15,6 @@ function node_tester_crawl($path) {
     $paths[] = $path . url("node/$node->nid");
   }
   $items['node'] = array(
-    'message' => 'Testing node paths.',
     'paths' => $paths,
   );
   return $items;

@@ -30,6 +30,8 @@ function drush_tester_crawl($path) {
   if (!$status) {
     module_enable(array('watchdog'));
   }
+  drush_print('Clearing caches...');
+  cache_clear_all();
   drush_print('Starting test crawl of ' . $path);
   $items = module_invoke_all('tester_info');
 
@@ -39,10 +41,15 @@ function drush_tester_crawl($path) {
     drush_print($item['description']);
     $tests = $function($path);
     foreach ($tests as $test) {
-      drush_print($test['message']);
+      if (!empty($test['prefix'])) {
+        drush_print($test['prefix']);
+      }
       foreach ($test['paths'] as $url) {
         drush_print('Testing ' . $url);
         drupal_http_request($url);
+      }
+      if (!empty($test['suffix'])) {
+        drush_print($test['suffix']);
       }
     }
   }
