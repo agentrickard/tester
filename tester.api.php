@@ -40,4 +40,21 @@ function hook_tester_info() {
  * Returns an array of URLs to crawl, looking for PHP errors.
  *
  * @return array
- *  An array of _internal_ Drupal paths, created by url() is preferred.
+ *   'prefix' => Optional. A message to print before crawling the URLs.
+ *   'paths' => Required. An array of _internal_ Drupal paths to crawl.
+ *     Creation of these paths by using the url() function is preferred.
+ *   'suffix' => Optional. A message to print after crawling the URLs.
+ */
+function hook_tester_crawl() {
+  // Hit the homepage.
+  $items['home'] = array(
+    'prefix' => 'Testing home page',
+    'paths' => array(url('<front>')),
+  );
+  // Hit a non-existent page.
+  $items['404'] = array(
+    'prefix' => 'Testing 404 page',
+    'paths' => array('/1h237123gdjsadkjhasdb12e'),
+  );
+  return $items;
+}
