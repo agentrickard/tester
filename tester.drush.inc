@@ -37,7 +37,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
   // Allow user choice of the test run.
   $items = module_invoke_all('tester_info');
   if (!isset($type) || ($type != 'all' && !isset($items[$type]))) {
-    $list = array('all' => 'All');
+    $list = array(1 => 'All');
     foreach ($items as $key => $item) {
       $skip = FALSE;
       if (!empty($item['dependencies'])) {
@@ -53,6 +53,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
       }
     }
     $type = drush_choice($list, 'Enter a number to choose which crawl to perform.', '!value');
+
     if (empty($type)) {
       return drush_user_abort();
     }
@@ -60,8 +61,8 @@ function drush_tester_crawl($base_path, $type = NULL) {
   if (isset($items[$type])) {
     $items = array($type => $items[$type]);
   }
-  else if ($type != 'all') {
-    $items = array_slice($items, $type, 1);
+  else if ($type > 1) {
+    $items = array_slice($items, $type - 2, 1, TRUE);
   }
 
   // @TODO: Possible setup hook.
