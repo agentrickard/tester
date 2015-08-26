@@ -53,8 +53,6 @@ function drush_tester_crawl($base_path, $type = NULL) {
       }
     }
     $type = drush_choice($list, 'Enter a number to choose which crawl to perform.', '!value');
-    drush_print($type);
-    return drush_user_abort();
     if (empty($type)) {
       return drush_user_abort();
     }
