@@ -5,6 +5,9 @@
  * Tester module drush commands.
  */
 
+define(TESTER_BARS,  '==================================================');
+define(TESTER_LINE, '--------------------------------------------------');
+
 /**
  * Implements hook_drush_command().
  */
@@ -31,9 +34,6 @@ function tester_drush_command() {
  * Crawl a site.
  */
 function drush_tester_crawl($base_path, $type = NULL) {
-  $line = '-----------------';
-  $bars = '=================';
-
   // Allow user choice of the test run.
   $items = tester_tester_info();
   $items += module_invoke_all('tester_info');
@@ -84,6 +84,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
   $temp['error_level'] = $conf['error_level'];
   $conf['error_level'] = ERROR_REPORTING_DISPLAY_ALL;
 
+  $count = 0;
   foreach ($items as $name => $item) {
     // Ensure we need to run the tests based on dependencies.
     $skip = FALSE;
@@ -107,15 +108,15 @@ function drush_tester_crawl($base_path, $type = NULL) {
       module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
     }
 
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     drush_print($item['description']);
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     $tests = $function();
     foreach ($tests as $test) {
       if (!empty($test['prefix'])) {
-        drush_print($line);
+        drush_print(TESTER_LINE);
         drush_print($test['prefix']);
-        drush_print($line);
+        drush_print(TESTER_LINE);
       }
       foreach ($test['paths'] as $path) {
         $url = $base_path . $path;
@@ -124,13 +125,16 @@ function drush_tester_crawl($base_path, $type = NULL) {
         drupal_http_request($url);
       }
       if (!empty($test['suffix'])) {
-        drush_print($line);
+        drush_print(TESTER_LINE);
         drush_print($test['suffix']);
-        drush_print($line);
+        drush_print(TESTER_LINE);
       }
     }
+    $count += count($tests);
   }
 
+  drush_print(TESTER_LINE);
+  drush_print($count . " pages crawled");
   tester_dblog_report();
 
   // Reset vars.
@@ -148,16 +152,14 @@ function drush_tester_crawl($base_path, $type = NULL) {
  * Generate the dblog report.
  */
 function tester_dblog_report() {
-  $bars = '==================================================';
-
   // All errors.
 
   $errors = db_query("SELECT location, severity, message, variables FROM {watchdog} WHERE type = 'php'")->fetchAll();
 
   if (empty($errors)) {
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     drush_print('No errors detected during test crawl.');
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     return;
   }
 
@@ -169,9 +171,9 @@ function tester_dblog_report() {
   }
 
   else if ($type == 1) {
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     drush_print('Complete error report: ' . count($errors) . ' errors');
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     $rows = array();
     $rows[] = array('Location', 'Message');
 
@@ -184,9 +186,9 @@ function tester_dblog_report() {
   else if ($type == 2) {
     $errors_unique = db_query("SELECT message, location, severity, variables FROM {watchdog} WHERE type = 'php' GROUP BY message")->fetchAll();
 
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     drush_print('Unique error report: ' . count($errors_unique) . ' unique errors');
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     $rows = array();
     $rows[] = array('Location', 'Message');
 
@@ -197,9 +199,9 @@ function tester_dblog_report() {
   }
   // Summary errors.
   else {
-    drush_print($bars);
+    drush_print(TESTER_LINE);
     drush_print('Summary error report');
-    drush_print($bars);
+    drush_print(TESTER_LINE);
 
     drush_print('Total errors: ' . count($errors));
     drush_print('Unique errors: ' . count($errors_unique));
