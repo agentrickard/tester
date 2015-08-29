@@ -148,6 +148,10 @@ function drush_tester_crawl($base_path, $type = NULL) {
   // Reset vars.
   $conf['dblog_row_limit'] = $temp['dblog_row_limit'];
   $conf['error_level'] = $temp['error_level'];
+
+  drush_print('The database logging module is enabled.');
+  drush_print('Run "drush tww" or "drush dis dblog -y" to disable.');
+  drush_print(TESTER_LINE);
 }
 
 /**
