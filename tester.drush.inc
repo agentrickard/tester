@@ -35,7 +35,8 @@ function drush_tester_crawl($base_path, $type = NULL) {
   $bars = '=================';
 
   // Allow user choice of the test run.
-  $items = module_invoke_all('tester_info');
+  $items = tester_tester_info();
+  $items += module_invoke_all('tester_info');
   if (!isset($type) || ($type != 'all' && !isset($items[$type]))) {
     $list = array(1 => 'All');
     foreach ($items as $key => $item) {
@@ -97,8 +98,15 @@ function drush_tester_crawl($base_path, $type = NULL) {
     if ($skip) {
       continue;
     }
+    // Load functions.
     $function = $name . '_tester_crawl';
-    module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
+    if (!function_exists($function)) {
+      include_once 'includes/' . $name . '.tester.inc';
+    }
+    else if (!function_exists($function)) {
+      module_load_include('inc', $item['module'], 'includes/' . $name . '.tester');
+    }
+
     drush_print($bars);
     drush_print($item['description']);
     drush_print($bars);
@@ -196,4 +204,31 @@ function tester_dblog_report() {
     drush_print('Total errors: ' . count($errors));
     drush_print('Unique errors: ' . count($errors_unique));
   }
+}
+
+/**
+ * Implements hook_tester_info() {
+ */
+function tester_tester_info() {
+  $items['system'] = array(
+    'description' => 'Testing base system URLs.',
+    'module' => 'tester',
+    'dependencies' => array(),
+  );
+  $items['menu'] = array(
+    'description' => 'Testing menu items.',
+    'module' => 'tester',
+    'dependencies' => array('menu'),
+  );
+  $items['node'] = array(
+    'description' => 'Testing node pages.',
+    'module' => 'tester',
+    'dependencies' => array('node'),
+  );
+  $items['user'] = array(
+    'description' => 'Testing user pages.',
+    'module' => 'tester',
+    'dependencies' => array('user'),
+  );
+  return $items;
 }
