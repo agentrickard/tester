@@ -39,13 +39,18 @@ function hook_tester_info() {
  *
  * Returns an array of URLs to crawl, looking for PHP errors.
  *
+ * @param $limit
+ *  A numberic limit to the number of records to crawl. If this is non-zero,
+ *  best practice is to return a selection of results (such as nodes of unique
+ *  types) so that the sample returns a cross-section of data.
+ *
  * @return array
  *   'prefix' => Optional. A message to print before crawling the URLs.
  *   'paths' => Required. An array of _internal_ Drupal paths to crawl.
  *     Creation of these paths by using the url() function is preferred.
  *   'suffix' => Optional. A message to print after crawling the URLs.
  */
-function hook_tester_crawl() {
+function hook_tester_crawl($limit = 0) {
   // Hit the homepage.
   $items['home'] = array(
     'prefix' => 'Testing home page',

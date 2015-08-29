@@ -25,6 +25,9 @@ function tester_drush_command() {
       'base_url' => 'Base url of the Drupal instanace. e.g. http://example.com/',
       'type'=> 'The test batch to run. (e.g. "all", "node", or "menu".)',
     ),
+    'options' => array(
+      'limit' => array('description' => 'Numeric limit of pages to crawl per report.'),
+    ),
   );
   $items['tester-report'] = array(
     'description' => 'Show test report.',
@@ -53,6 +56,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
   // Allow user choice of the test run.
   $items = tester_tester_info();
   $items += module_invoke_all('tester_info');
+  $limit = drush_get_option('limit');
   if (!isset($type) || ($type != 'all' && !isset($items[$type]))) {
     $list = array(1 => 'All');
     foreach ($items as $key => $item) {
@@ -127,7 +131,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
     drush_print(TESTER_LINE);
     drush_print($item['description']);
     drush_print(TESTER_LINE);
-    $tests = $function();
+    $tests = $function($limit);
     foreach ($tests as $test) {
       if (!empty($test['prefix'])) {
         drush_print(TESTER_LINE);
@@ -139,6 +143,7 @@ function drush_tester_crawl($base_path, $type = NULL) {
         drush_print('Testing ' . $url);
         // @TODO: perhaps just use CURL.
         drupal_http_request($url);
+        $count++;
       }
       if (!empty($test['suffix'])) {
         drush_print(TESTER_LINE);
@@ -146,7 +151,6 @@ function drush_tester_crawl($base_path, $type = NULL) {
         drush_print(TESTER_LINE);
       }
     }
-    $count += count($tests);
   }
 
   drush_print(TESTER_LINE);
