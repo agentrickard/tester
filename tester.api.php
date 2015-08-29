@@ -13,7 +13,7 @@
  * a set of URLs to crawl.
  *
  * Files are expected to be in the directory {module}/includes/ and to be named
- * {type}.inc.
+ * {type}.tester.inc.
  *
  * The values for {module} and {type} are read from the 'module' and key values
  * returned by this hook.
