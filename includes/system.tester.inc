@@ -8,7 +8,7 @@
 /**
  * Implements hook_tester_crawl().
  */
-function system_tester_crawl() {
+function system_tester_crawl($limit = 0) {
   $items['home'] = array(
     'prefix' => 'Testing home page',
     'paths' => array(url('<front>')),
