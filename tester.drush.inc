@@ -26,6 +26,14 @@ function tester_drush_command() {
       'type'=> 'The test batch to run. (e.g. "all", "node", or "menu".)',
     ),
   );
+  $items['tester-report'] = array(
+    'description' => 'Show test report.',
+    'examples' => array(
+      'tester-report' => 'Show test report.',
+      'tr' => 'Show test report.',
+    ),
+    'aliases' => array('tr'),
+  );
   $items['tester-wipe'] = array(
     'description' => 'Remove log messages.',
     'examples' => array(
@@ -152,6 +160,13 @@ function drush_tester_crawl($base_path, $type = NULL) {
   drush_print('The database logging module is enabled.');
   drush_print('Run "drush tww" or "drush dis dblog -y" to disable.');
   drush_print(TESTER_LINE);
+}
+
+/**
+ * Show reports.
+ */
+function drush_tester_report() {
+  tester_dblog_report();
 }
 
 /**
