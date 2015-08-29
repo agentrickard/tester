@@ -26,6 +26,22 @@ function tester_drush_command() {
       'type'=> 'The test batch to run. (e.g. "all", "node", or "menu".)',
     ),
   );
+  $items['tester-report'] = array(
+    'description' => 'Show test report.',
+    'examples' => array(
+      'tester-report' => 'Show test report.',
+      'tr' => 'Show test report.',
+    ),
+    'aliases' => array('tr'),
+  );
+  $items['tester-wipe'] = array(
+    'description' => 'Remove log messages.',
+    'examples' => array(
+      'tester-wipe' => 'Remove watchdog messages',
+      'tww' => 'Remove watchdog messages',
+    ),
+    'aliases' => array('tww'),
+  );
 
   return $items;
 }
@@ -140,12 +156,17 @@ function drush_tester_crawl($base_path, $type = NULL) {
   // Reset vars.
   $conf['dblog_row_limit'] = $temp['dblog_row_limit'];
   $conf['error_level'] = $temp['error_level'];
-  db_query('TRUNCATE {watchdog}');
 
-  // @TODO: Possible teardown hook.
-  if (!$status) {
-    module_disable(array('dblog'));
-  }
+  drush_print('The database logging module is enabled.');
+  drush_print('Run "drush tww" or "drush dis dblog -y" to disable.');
+  drush_print(TESTER_LINE);
+}
+
+/**
+ * Show reports.
+ */
+function drush_tester_report() {
+  tester_dblog_report();
 }
 
 /**
@@ -205,6 +226,25 @@ function tester_dblog_report() {
 
     drush_print('Total errors: ' . count($errors));
     drush_print('Unique errors: ' . count($errors_unique));
+  }
+}
+
+/**
+ * Removes watchdog entries.
+ */
+function drush_tester_wipe() {
+  $list = array(1 => 'Disable database logging', 2 => 'Clear {watchdog} table');
+  $type = drush_choice($list, 'Select wipe operation', '!value');
+
+  if (empty($type)) {
+    return drush_user_abort();
+  }
+
+  db_query('TRUNCATE {watchdog}');
+  drush_print('Table emptied.');
+  if ($type == 1) {
+    module_disable(array('dblog'));
+    drush_print('Database logging disabled.');
   }
 }
 
