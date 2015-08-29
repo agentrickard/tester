@@ -1,5 +1,0 @@
-name = Tester
-description = Drush commands for site testing
-core = 7.x
-files[] = tester.drush.inc
-files[] = includes/system.inc
