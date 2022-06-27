@@ -1,0 +1,6 @@
+name: PHP Version Tester
+  description: This module is meant to be a PHP tester that will help a user see what their site will need to help with updating to PHP 8 by testing multiple stages of a site and generating a log of what conflicts may arise.
+    package: Custom
+
+      type: module
+        core_version_requirement: ^8 || ^9.0
