@@ -1,31 +1,24 @@
 Tester
 ===
 
-Tester is a drop-in Drupal 7 plugin that provides drush commands for spidering
-your site.
+Tester is a Drupal module that provides drush commands for spidering
+your site. The purpose is to automatically load URLs in order to track PHP version errors.
 
-It is not a module. It should be installed as a global drush extension.
+## Use case
 
-Drush searches for commandfiles in the following locations:
+Suppose we have a Drupal 9.3 site running on PHP 7.4. We would like to do the following:
 
--   The "/path/to/drush/commands" folder.
--   Folders listed in the 'include' option (see `drush topic docs-configuration`).
--   The system-wide drush commands folder, e.g. /usr/share/drush/commands
--   The ".drush" folder in the user's HOME folder.
--   /drush and /sites/all/drush in the current Drupal installation
--   All enabled modules in the current Drupal installation
+* Confirm that it will run without error on PHP 8.1.
 
-The purpose is to automatically load URLs in order to track PHP version errors.
+While code analysis tools like [Drupal check](https://github.com/mglaman/drupal-check) can help review code for errors, we would also like to ensure that pages load as expected without PHP errors, warnings, or notices.
 
 # Usage
 
-* Download and install
-* `drush dl tester` or `git clone git@github.com:palantirnet/tester.git`
-* `cp -R tester ~/.drush`
+* Download and install the module with composer or `git clone git@github.com:agentickard/tester.git`
+* `drush en tester`
 * Run a test
 * `drush tester-crawl http://example.com`
-* Note that you must supply the URL to the site root. No trailing slash is
-required.
+* Note that you must supply the URL to the site root. No trailing slash is required.
 
 The command is aliased to `tc`, so this works as well:
 
@@ -35,7 +28,11 @@ The command is aliased to `tc`, so this works as well:
 
 The module comes with four sets of base tests:
 
-* Crawl the home page and a 404 page.
+* Crawl the home page, a 403 page, and a 404 page.
 * Crawl all node pages.
 * Crawl all internal menu links that do not require arguments.
 * Crawl all user pages.
+
+## History
+
+This module was originally written for Drupal 7 during the PHP 7 conversion cycle. The original code is in the /drupal7 folder.
