@@ -1,0 +1,5 @@
+services:
+  tester.commands:
+    class: \Drupal\tester\Commands\TesterCommands
+    tags:
+      - { name: drush.command }
