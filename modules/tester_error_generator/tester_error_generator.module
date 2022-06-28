@@ -35,7 +35,7 @@ function tester_error_generator_page_top(&$page_top) {
   }
 
   return $page_top['tester'] = [
-    '#prefix' => '<div class="messages messages--status">',
+    '#prefix' => '<div class="messages messages--warning">',
     '#markup' => $text,
     '#suffix' => '</div>',
   ];
