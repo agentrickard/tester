@@ -1,0 +1,7 @@
+name: 'PHP Error Generator'
+description: 'Generates known errors for development.'
+package: Development
+type: module
+core_version_requirement: ^8 || ^9
+dependencies:
+  - tester:tester
