@@ -1,0 +1,5 @@
+name: 'PHP Version Tester'
+description: 'Tests a site for PHP errors and generates a log of issues.'
+package: Custom
+type: module
+core_version_requirement: ^8 || ^9
