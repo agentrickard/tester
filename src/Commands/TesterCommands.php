@@ -6,6 +6,7 @@ use Drush\Commands\DrushCommands;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\State\StateInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\TransferStats;
 
 /**
  * Defines the class for our drush commands.
@@ -66,13 +67,25 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:crawl, drush tc
    */
   public function crawl($base_url = NULL) {
+    echo "Crawling URLs\n";
+
     if (is_null($base_url)) {
       GLOBAL $base_url;
     }
     $urls = $this->getUrls();
-    echo "Crawling URLs\n";
+    // We want to test 403 and 404 pages, so allow them.
+    // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
+    $options = [
+      'http_errors' => FALSE,
+      'on_stats' => function (TransferStats $stats) {
+        echo "  - Status: " . $stats->getResponse()->getStatusCode() . "\n";
+      },
+    ];
+
     foreach ($urls as $url) {
-      echo " • $base_url$url\n";
+      $path = $base_url . $url;
+      echo " • $path\n";
+      $this->httpClient->request('GET', $path, $options);
     }
   }
 
