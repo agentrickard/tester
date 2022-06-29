@@ -23,15 +23,18 @@ class TesterCommands extends DrushCommands {
   /**
    * Crawls a site looking for errors.
    *
+   * @param string $base_url
+   *   The base URL to use when crawling the site. No trailing slash.
+   *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
    */
-  public function crawl() {
+  public function crawl($base_url) {
     $urls = $this->getUrls();
-    echo "Crawling URLS\n";
+    echo "Crawling URLs\n";
     foreach ($urls as $url) {
-      echo "• $url\n";
+      echo " • $base_url$url\n";
     }
   }
 
@@ -45,8 +48,8 @@ class TesterCommands extends DrushCommands {
     // @todo Use the plugin system. https://palantir.atlassian.net/browse/PHP-3
     return [
       '/',
-      'admin',
-      'foo-bar',
+      '/admin',
+      '/foo-bar',
     ];
   }
 
