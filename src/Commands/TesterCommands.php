@@ -3,11 +3,45 @@
 namespace Drupal\tester\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\State\StateInterface;
+use GuzzleHttp\Client;
 
 /**
  * Defines the class for our drush commands.
  */
 class TesterCommands extends DrushCommands {
+
+  /**
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * @var \GuzzleHttp\Client
+   */
+  protected $httpClient;
+
+  /**
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
+   * Constructs the class.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
+   * @param \GuzzleHttp\Client $http_client
+   *   The default http client.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state interface
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, Client $http_client, StateInterface $state) {
+    $this->configFactory = $config_factory;
+    $this->httpClient = $http_client;
+    $this->state = $state;
+  }
 
   /**
    * Test function.
