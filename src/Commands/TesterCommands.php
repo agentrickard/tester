@@ -72,9 +72,13 @@ class TesterCommands extends DrushCommands {
     if (is_null($base_url)) {
       GLOBAL $base_url;
     }
+
     $urls = $this->getUrls();
+
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
+    // We also do some status reporting.
+    // See https://docs.guzzlephp.org/en/stable/request-options.html#on-stats
     $options = [
       'http_errors' => FALSE,
       'on_stats' => function (TransferStats $stats) {
