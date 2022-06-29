@@ -8,30 +8,27 @@
 function tester_error_generator_page_top(&$page_top) {
   // Get the current request path.
   $path = \Drupal::request()->getPathInfo();
+  // Always throw a warning on /, otherwise, randomize.
+  $number = ($path === '/') ? 1 : rand(1, 5);
+  switch ($number) {
+    case 1:
+      $text = t('Generate a warning');
+      trigger_error($text, E_USER_WARNING);
+      break;
 
-  if ($path === '/') {
-    $text = tester_error_generator_throw_warning();
-  }
+    case 2:
+      $text = t('Generate an error');
+      trigger_error($text, E_USER_ERROR);
+      break;
 
-  else {
-    $number = rand(1, 5);
-    switch ($number) {
-      case 1:
-        $text = tester_error_generator_throw_notice();
-        break;
+    case 3:
+      $text = t('Generate a deprecation');
+      trigger_error($text, E_USER_DEPRECATED);
+      break;
 
-      case 2:
-        $text = tester_error_generator_throw_error();
-        break;
-
-      case 3:
-        $text = tester_error_generator_throw_deprecated();
-        break;
-
-      default:
-        $text = 'This module should not be used in production';
-        break;
-    }
+    default:
+      $text = t('The <em>tester_error_generator</em> module should not be used in production');
+      break;
   }
 
   return $page_top['tester'] = [
@@ -39,44 +36,4 @@ function tester_error_generator_page_top(&$page_top) {
     '#markup' => $text,
     '#suffix' => '</div>',
   ];
-}
-
-/**
- * Generates an E_WARNING.
- *
- * @return string
- *   A message string.
- */
-function tester_error_generator_throw_warning() {
-  return 'Generating a warning';
-}
-
-/**
- * Generates an E_NOTICE.
- *
- * @return string
- *   A message string.
- */
-function tester_error_generator_throw_notice() {
-  return 'Generating a notice';
-}
-
-/**
- * Generates an E_RECOVERABLE_ERROR.
- *
- * @return string
- *   A message string.
- */
-function tester_error_generator_throw_error() {
-  return 'Generating an error';
-}
-
-/**
- * Generates an E_DEPRECATED.
- *
- * @return string
- *   A message string.
- */
-function tester_error_generator_throw_deprecated() {
-  return 'Generating a deprecation';
 }
