@@ -2,6 +2,7 @@
 
 namespace Drupal\tester\Commands;
 
+use Drupal\tester\TesterPluginManager;
 use Drush\Commands\DrushCommands;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\State\StateInterface;
@@ -12,6 +13,11 @@ use GuzzleHttp\TransferStats;
  * Defines the class for our drush commands.
  */
 class TesterCommands extends DrushCommands {
+
+  /**
+   * @var \Drupal\tester\TesterPluginManager
+   */
+  protected $pluginManager;
 
   /**
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -31,6 +37,8 @@ class TesterCommands extends DrushCommands {
   /**
    * Constructs the class.
    *
+   * @param \Drupal\tester\TesterPluginManager $plugin_manager
+   *   The tester plugin manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
    * @param \GuzzleHttp\Client $http_client
@@ -38,7 +46,8 @@ class TesterCommands extends DrushCommands {
    * @param \Drupal\Core\State\StateInterface $state
    *   The state interface
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Client $http_client, StateInterface $state) {
+  public function __construct(TesterPluginManager $plugin_manager, ConfigFactoryInterface $config_factory, Client $http_client, StateInterface $state) {
+    $this->pluginManager = $plugin_manager;
     $this->configFactory = $config_factory;
     $this->httpClient = $http_client;
     $this->state = $state;
