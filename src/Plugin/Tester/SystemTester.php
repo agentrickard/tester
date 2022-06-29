@@ -3,6 +3,7 @@
 namespace Drupal\tester\Plugin\Tester;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\tester\Plugin\TesterPluginInterface;
 
 /**
  * Defines routes owned by the System module.
@@ -12,7 +13,7 @@ use Drupal\Component\Plugin\PluginBase;
  * )
  *
  */
-class SystemTester extends PluginBase {
+class SystemTester extends PluginBase implements TesterPluginInterface {
 
   public function urls() {
     return [

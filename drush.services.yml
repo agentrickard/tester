@@ -3,4 +3,4 @@ services:
     class: \Drupal\tester\Commands\TesterCommands
     tags:
       - { name: drush.command }
-    arguments: ['@plugin.manager.tester', @config.factory', '@http_client', '@state']
+    arguments: ['@plugin.manager.tester', '@config.factory', '@http_client', '@state']

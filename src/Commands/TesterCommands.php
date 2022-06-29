@@ -109,12 +109,15 @@ class TesterCommands extends DrushCommands {
    *   An array of URLs.
    */
   private function getUrls() {
-    // @todo Use the plugin system. https://palantir.atlassian.net/browse/PHP-3
-    return [
-      '/',
-      '/admin',
-      '/foo-bar',
-    ];
+    $urls = [];
+    $plugins = $this->pluginManager->getDefinitions();
+    foreach ($plugins as $id => $plugin) {
+      // @todo Check dependencies.
+      $instance = $this->pluginManager->createInstance($id);
+      $urls = array_merge($urls, $instance->urls());
+    }
+
+    return $urls;
   }
 
 }
