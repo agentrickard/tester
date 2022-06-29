@@ -17,7 +17,18 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:test
    */
   public function test() {
-    echo "Hello World";
+    echo "Hello World\n";
+  }
+
+  /**
+   * Crawls a site looking for errors.
+   *
+   * @command tester:crawl
+   * @aliases tester-crawl, tc
+   * @usage drush tester:crawl, drush tc
+   */
+  public function crawl() {
+    echo "Hello World\n";
   }
 
 }
