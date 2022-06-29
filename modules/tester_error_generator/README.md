@@ -6,9 +6,8 @@ It should never be used in production.
 
 ## Error generation
 
-We use the list from [PHP Error Constants](https://www.php.net/manual/en/errorfunc.constants.php), and only can only test for non-fatal errors.
+We use the list from [trigger_error()](https://www.php.net/manual/en/function.trigger-error.php), and only can only test E_USER errors, which is sufficient for development of the Drush command.
 
-* E_WARNING
-* E_NOTICE
-* E_RECOVERABLE_ERROR
-* E_DEPRECATED
+* E_USER_WARNING
+* E_USER_NOTICE
+* E_USER_DEPRECATED
