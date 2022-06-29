@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * Implements hook_page_top().
+ *
+ * In this function, we insert deliberate errors under some conditions.
+ */
+function tester_error_generator_page_top(&$page_top) {
+  // Get the current request path.
+  $path = \Drupal::request()->getPathInfo();
+  // Always throw a warning on /, otherwise, randomize.
+  $number = ($path === '/') ? 1 : rand(1, 5);
+  switch ($number) {
+    case 1:
+      $text = t('Generate a warning');
+      trigger_error($text, E_USER_WARNING);
+      break;
+
+    case 2:
+      $text = t('Generate an error');
+      trigger_error($text, E_USER_ERROR);
+      break;
+
+    case 3:
+      $text = t('Generate a deprecation');
+      trigger_error($text, E_USER_DEPRECATED);
+      break;
+
+    default:
+      $text = t('The <em>tester_error_generator</em> module should not be used in production');
+      break;
+  }
+
+  return $page_top['tester'] = [
+    '#prefix' => '<div class="messages messages--warning">',
+    '#markup' => $text,
+    '#suffix' => '</div>',
+  ];
+}
