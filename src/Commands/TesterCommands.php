@@ -25,12 +25,16 @@ class TesterCommands extends DrushCommands {
    *
    * @param string $base_url
    *   The base URL to use when crawling the site. No trailing slash.
+   *   If not provided, the global $base_url value will be used.
    *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
    */
-  public function crawl($base_url) {
+  public function crawl($base_url = NULL) {
+    if (is_null($base_url)) {
+      GLOBAL $base_url;
+    }
     $urls = $this->getUrls();
     echo "Crawling URLs\n";
     foreach ($urls as $url) {
