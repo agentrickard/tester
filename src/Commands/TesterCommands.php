@@ -110,8 +110,10 @@ class TesterCommands extends DrushCommands {
    */
   private function getUrls() {
     $urls = [];
+
     $plugins = $this->pluginManager->getDefinitions();
-    foreach ($plugins as $id => $plugin) {
+
+    foreach (array_keys($plugins) as $id) {
       // @todo Check dependencies.
       $instance = $this->pluginManager->createInstance($id);
       $urls = array_merge($urls, $instance->urls());
