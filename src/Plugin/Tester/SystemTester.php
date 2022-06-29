@@ -9,7 +9,7 @@ use Drupal\tester\Plugin\TesterPluginInterface;
  * Defines routes owned by the System module.
  *
  * @TesterPlugin(
- *   id = "system"
+ *   id = "system",
  * )
  *
  */
@@ -20,6 +20,14 @@ class SystemTester extends PluginBase implements TesterPluginInterface {
       '/',
       '/admin',
       '/foo-bar',
+    ];
+  }
+
+  public function dependencies() {
+    return [
+      'modules' => [
+        'system',
+      ],
     ];
   }
 
