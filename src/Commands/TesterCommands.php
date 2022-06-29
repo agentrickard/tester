@@ -28,7 +28,26 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:crawl, drush tc
    */
   public function crawl() {
-    echo "Hello World\n";
+    $urls = $this->getUrls();
+    echo "Crawling URLS\n";
+    foreach ($urls as $url) {
+      echo "• $url\n";
+    }
+  }
+
+  /**
+   * Retrieves the list of URLs to test.
+   *
+   * @return array
+   *   An array of URLs.
+   */
+  private function getUrls() {
+    // @todo Use the plugin system. https://palantir.atlassian.net/browse/PHP-3
+    return [
+      '/',
+      'admin',
+      'foo-bar',
+    ];
   }
 
 }
