@@ -152,7 +152,9 @@ class TesterCommands extends DrushCommands {
         $path = $base_url . $url;
         echo " • $path\n";
         $this->setErrorStorage($path);
-        $this->httpClient->request('GET', $path, $options);
+        $response = $this->httpClient->request('GET', $path, $options);
+        // @todo Make a get/set for errorCount. Rename to errorLog.
+        $this->errorCount[$path]['response'] = $response->getStatusCode();
         $this->captureErrors($path);
       }
     }
@@ -254,6 +256,7 @@ class TesterCommands extends DrushCommands {
    */
   protected function setErrorStorage($path) {
     $this->errorCount[$path] = [
+      'response' => NULL,
       'initial' => $this->getWatchdogCount(),
       'final' => 0,
       'errors' => [],
