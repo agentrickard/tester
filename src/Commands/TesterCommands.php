@@ -135,13 +135,8 @@ class TesterCommands extends DrushCommands {
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
-    // We also do some simple status reporting.
-    // See https://docs.guzzlephp.org/en/stable/request-options.html#on-stats
     $options = [
       'http_errors' => FALSE,
-      'on_stats' => function (TransferStats $stats) {
-        echo "  - Status: " . $stats->getResponse()->getStatusCode() . "\n";
-      },
     ];
 
     if (empty($urls)) {
