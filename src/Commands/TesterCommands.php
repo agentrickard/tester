@@ -2,6 +2,7 @@
 
 namespace Drupal\tester\Commands;
 
+use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Drupal\tester\TesterPluginManager;
 use Drush\Commands\DrushCommands;
 use Drupal\Component\Utility\Xss;
@@ -126,8 +127,18 @@ class TesterCommands extends DrushCommands {
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
+   *
+   * @field-labels
+   *   path: Path
+   *   status: Status
+   *   errors: Errors
+   * @default_fields path,status,errors
+   *
+   * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
+   *   Table output.
    */
   public function crawl($base_url = NULL) {
+    $rows = [];
     $this->setUp();
     echo "Crawling URLs\n";
 
@@ -149,15 +160,35 @@ class TesterCommands extends DrushCommands {
     else {
       foreach ($urls as $url) {
         $path = $base_url . $url;
-        echo " • $path\n";
         $this->setErrorStorage($path);
         $response = $this->httpClient->request('GET', $path, $options);
         $this->setErrorLog($path,['response' => $response->getStatusCode()]);
         $this->captureErrors($path);
+
+        // @todo Move to a render function?
+        // @todo Alternate formatting?
+        $row = [
+          'path' => $path,
+          'status' => $this->getErrorLog($path, 'response'),
+          'errors' => $this->getErrorLog($path, 'count') ?: 0,
+        ];
+        $rows[] = $row;
+        if ($row['errors']) {
+          $rows[]['path'] = '';
+          foreach ($this->getErrorLog($path, 'errors') as $error) {
+            $rows[] = [
+              'path' => ' • ' . trim(strip_tags($error), "."),
+            ];
+          }
+          $rows[]['path'] = '';
+        }
+
       }
     }
 
     $this->tearDown();
+
+    return new RowsOfFields($rows);
   }
 
   /**
