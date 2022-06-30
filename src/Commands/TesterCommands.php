@@ -67,6 +67,13 @@ class TesterCommands extends DrushCommands {
   protected $database;
 
   /**
+   * The error count for the run.
+   *
+   * @var array
+   */
+  protected $errorCount = [];
+
+  /**
    * Constructs the class.
    *
    * @param \Drupal\tester\TesterPluginManager $plugin_manager
@@ -144,7 +151,9 @@ class TesterCommands extends DrushCommands {
       foreach ($urls as $url) {
         $path = $base_url . $url;
         echo " • $path\n";
+        $this->setErrorStorage($path);
         $this->httpClient->request('GET', $path, $options);
+        $this->captureErrors($path);
       }
     }
 
@@ -198,6 +207,73 @@ class TesterCommands extends DrushCommands {
       }
     }
     return $return;
+  }
+
+  /**
+   * Captures the errors for a specific path for display.
+   *
+   * @param string $path
+   *   The URL being tested.
+   */
+  protected function captureErrors($path) {
+    $this->errorCount[$path]['final'] = $this->getWatchdogCount();
+    if ($this->errorCount[$path]['final'] > $this->errorCount[$path]['initial']) {
+      $count = $this->errorCount[$path]['final'] - $this->errorCount[$path]['initial'];
+      $this->errorCount[$path]['errors'] = $this->getErrors($count, $this->errorCount[$path]['initial']);
+    }
+  }
+
+  /**
+   * Gets the errors from {watchdog} and returns them.
+   *
+   * @param int $count
+   *   The number of errors to return.
+   * @param int $initial
+   *   The record number to start with.
+   */
+  protected function getErrors(int $count, int $initial) {
+    echo $count . "\n";
+    echo $initial . "\n";
+    $query = $this->database->select('watchdog', 'w')
+      ->fields('w', ['wid'])
+      ->orderBy('wid', 'ASC')
+      ->range($initial, $count);
+    $result = $query->execute();
+
+    foreach ($result as $dblog) {
+
+    }
+
+  }
+
+  /**
+   * Initializes error capture for a path request.
+   *
+   * @param string $path
+   *   The URL being tested.
+   */
+  protected function setErrorStorage($path) {
+    $this->errorCount[$path] = [
+      'initial' => $this->getWatchdogCount(),
+      'final' => 0,
+      'errors' => [],
+    ];
+  }
+
+  /**
+   * Returns the highwater row in the {watchdog} table.
+   *
+   * We do this so we can query the errors specific to a path.
+   *
+   * @return integer
+   *   The count.
+   */
+  protected function getWatchdogCount() {
+    $query = $this->database->select('watchdog', 'w')
+      ->fields('w', ['wid'])
+      ->orderBy('wid', 'DESC')
+      ->range(0, 1);
+    return $query->execute()->fetchField();
   }
 
   /**
