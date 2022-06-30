@@ -1,0 +1,4 @@
+services:
+  plugin.manager.tester:
+    class: Drupal\tester\TesterPluginManager
+    parent: default_plugin_manager
