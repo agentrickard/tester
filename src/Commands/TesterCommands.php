@@ -85,6 +85,7 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:crawl, drush tc
    */
   public function crawl($base_url = NULL) {
+    $this->setUp();
     echo "Crawling URLs\n";
 
     if (is_null($base_url)) {
@@ -114,6 +115,8 @@ class TesterCommands extends DrushCommands {
         $this->httpClient->request('GET', $path, $options);
       }
     }
+
+    $this->tearDown();
   }
 
   /**
@@ -163,6 +166,23 @@ class TesterCommands extends DrushCommands {
       }
     }
     return $return;
+  }
+
+  /**
+   * Sets up the crawler run by changing application state.
+   *
+   * We want dblog enabled and full error reporting. When finished, we will
+   * set those back.
+   */
+  private function setUp() {
+
+  }
+
+  /**
+   * Tears down the crawler run by changing application state.
+   */
+  private function tearDown() {
+
   }
 
 }
