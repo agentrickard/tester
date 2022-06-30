@@ -5,6 +5,7 @@ namespace Drupal\tester\Commands;
 use Drupal\tester\TesterPluginManager;
 use Drush\Commands\DrushCommands;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\State\StateInterface;
@@ -17,34 +18,53 @@ use GuzzleHttp\TransferStats;
 class TesterCommands extends DrushCommands {
 
   /**
+   * The tester plugin manager.
+   *
    * @var \Drupal\tester\TesterPluginManager
    */
   protected $pluginManager;
 
   /**
+   * The module handler.
+   *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
   /**
+   * The module installer.
+   *
    * @var \Drupal\Core\Extension\ModuleInstallerInterface
    */
   protected $moduleInstaller;
 
   /**
+   * The config factory service.
+   *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
+   * The default http client.
+   *
    * @var \GuzzleHttp\Client
    */
   protected $httpClient;
 
   /**
+   * The state interface.
+   *
    * @var \Drupal\Core\State\StateInterface
    */
   protected $state;
+
+  /**
+   * The database service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
   /**
    * Constructs the class.
@@ -60,15 +80,18 @@ class TesterCommands extends DrushCommands {
    * @param \GuzzleHttp\Client $http_client
    *   The default http client.
    * @param \Drupal\Core\State\StateInterface $state
-   *   The state interface
+   *   The state interface.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    */
-  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state) {
+  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database) {
     $this->pluginManager = $plugin_manager;
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
     $this->configFactory = $config_factory;
     $this->httpClient = $http_client;
     $this->state = $state;
+    $this->database = $database;
   }
 
   /**
