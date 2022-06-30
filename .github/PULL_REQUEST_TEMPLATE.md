@@ -1,4 +1,4 @@
-User story: [TC22-XX: Story name](https://palantir.atlassian.net/browse/TC22-XX)
+User story: [PHP-XX: Story name](https://palantir.atlassian.net/browse/PHP-XX)
 
 ### Description
 
