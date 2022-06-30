@@ -15,6 +15,9 @@ use Drupal\tester\Plugin\TesterPluginInterface;
  */
 class SystemTester extends PluginBase implements TesterPluginInterface {
 
+  /**
+   * {@inheritdoc}
+   */
   public function urls() {
     return [
       '/',
@@ -23,6 +26,9 @@ class SystemTester extends PluginBase implements TesterPluginInterface {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function dependencies() {
     return [
       'modules' => [
