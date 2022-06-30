@@ -4,10 +4,13 @@ namespace Drupal\tester\Commands;
 
 use Drupal\tester\TesterPluginManager;
 use Drush\Commands\DrushCommands;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\TransferStats;
 
@@ -16,35 +19,63 @@ use GuzzleHttp\TransferStats;
  */
 class TesterCommands extends DrushCommands {
 
+  use StringTranslationTrait;
+
   /**
+   * The tester plugin manager.
+   *
    * @var \Drupal\tester\TesterPluginManager
    */
   protected $pluginManager;
 
   /**
+   * The module handler.
+   *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
   /**
+   * The module installer.
+   *
    * @var \Drupal\Core\Extension\ModuleInstallerInterface
    */
   protected $moduleInstaller;
 
   /**
+   * The config factory service.
+   *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
+   * The default http client.
+   *
    * @var \GuzzleHttp\Client
    */
   protected $httpClient;
 
   /**
+   * The state interface.
+   *
    * @var \Drupal\Core\State\StateInterface
    */
   protected $state;
+
+  /**
+   * The database service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
+   * The error count for the run.
+   *
+   * @var array
+   */
+  protected $errorLog = [];
 
   /**
    * Constructs the class.
@@ -60,15 +91,18 @@ class TesterCommands extends DrushCommands {
    * @param \GuzzleHttp\Client $http_client
    *   The default http client.
    * @param \Drupal\Core\State\StateInterface $state
-   *   The state interface
+   *   The state interface.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    */
-  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state) {
+  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database) {
     $this->pluginManager = $plugin_manager;
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
     $this->configFactory = $config_factory;
     $this->httpClient = $http_client;
     $this->state = $state;
+    $this->database = $database;
   }
 
   /**
@@ -105,13 +139,8 @@ class TesterCommands extends DrushCommands {
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
-    // We also do some simple status reporting.
-    // See https://docs.guzzlephp.org/en/stable/request-options.html#on-stats
     $options = [
       'http_errors' => FALSE,
-      'on_stats' => function (TransferStats $stats) {
-        echo "  - Status: " . $stats->getResponse()->getStatusCode() . "\n";
-      },
     ];
 
     if (empty($urls)) {
@@ -121,7 +150,10 @@ class TesterCommands extends DrushCommands {
       foreach ($urls as $url) {
         $path = $base_url . $url;
         echo " • $path\n";
-        $this->httpClient->request('GET', $path, $options);
+        $this->setErrorStorage($path);
+        $response = $this->httpClient->request('GET', $path, $options);
+        $this->setErrorLog($path,['response' => $response->getStatusCode()]);
+        $this->captureErrors($path);
       }
     }
 
@@ -178,6 +210,115 @@ class TesterCommands extends DrushCommands {
   }
 
   /**
+   * Captures the errors for a specific path for display.
+   *
+   * @param string $path
+   *   The URL being tested.
+   */
+  protected function captureErrors($path) {
+    $final = $this->getWatchdogCount();
+    $initial = $this->getErrorLog($path, 'initial');
+
+    if ($final > $initial) {
+      $count = $final - $initial;
+      $errors = $this->getErrors($count, $initial);
+      $this->setErrorLog($path, [
+        'final' => $final,
+        'count' => count($errors),
+        'errors' => $errors,
+      ]);
+    }
+  }
+
+  /**
+   * Gets the errors from {watchdog} and returns them.
+   *
+   * @param int $count
+   *   The number of errors to return.
+   * @param int $initial
+   *   The record number to start with.
+   */
+  protected function getErrors(int $count, int $initial) {
+    $errors = [];
+    $query = $this->database->select('watchdog', 'w')
+      ->fields('w', ['wid', 'message', 'variables'])
+      ->orderBy('wid', 'ASC')
+      ->range($initial, $count);
+    $result = $query->execute();
+
+    foreach ($result as $dblog) {
+      $errors[$dblog->wid] = $this->formatMessage($dblog);
+    }
+
+    return $errors;
+  }
+
+  /**
+   * Initializes error capture for a path request.
+   *
+   * @param string $path
+   *   The URL being tested.
+   */
+  protected function setErrorStorage($path) {
+    $data = [
+      'response' => NULL,
+      'initial' => $this->getWatchdogCount(),
+      'final' => 0,
+      'count' => 0,
+      'errors' => [],
+    ];
+    $this->setErrorLog($path, $data);
+  }
+
+  /**
+   * Returns an error log value for a specific path.
+   *
+   * @param $path
+   *   The path being checked.
+   * @param $value
+   *   The value to retrieve.
+   *
+   * @return mixed|null
+   */
+  public function getErrorLog($path, $value) {
+    return $this->errorLog[$path][$value] ?: NULL;
+  }
+
+  /**
+   * Sets the errorLog for a request.
+   *
+   * @param $path
+   *   The path being checked.
+   * @param array $values
+   *   The values to set. Only pass what has changed.
+   *
+   * @return array
+   */
+  public function setErrorLog($path, array $values) {
+    foreach ($values as $key => $value) {
+      $this->errorLog[$path][$key] = $value;
+    }
+
+    return $this->errorLog;
+  }
+
+  /**
+   * Returns the highwater row in the {watchdog} table.
+   *
+   * We do this so we can query the errors specific to a path.
+   *
+   * @return integer
+   *   The count.
+   */
+  protected function getWatchdogCount() {
+    $query = $this->database->select('watchdog', 'w')
+      ->fields('w', ['wid'])
+      ->orderBy('wid', 'DESC')
+      ->range(0, 1);
+    return $query->execute()->fetchField();
+  }
+
+  /**
    * Sets up the crawler run by changing application state.
    *
    * We want dblog enabled and full error reporting. When finished, we will
@@ -226,6 +367,41 @@ class TesterCommands extends DrushCommands {
 
     // Clear state.
     $this->state->delete('tester');
+  }
+
+  /**
+   * Formats a database log message.
+   *
+   * @param object $row
+   *   The record from the watchdog table. The object properties are: wid, uid,
+   *   severity, type, timestamp, message, variables, link, name.
+   *
+   * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup|false
+   *   The formatted log message or FALSE if the message or variables properties
+   *   are not set.
+   */
+  public function formatMessage($row) {
+    // Check for required properties.
+    if (isset($row->message, $row->variables)) {
+      $variables = @unserialize($row->variables);
+      // Messages without variables or user specified text.
+      if ($variables === NULL) {
+        $message = Xss::filterAdmin($row->message);
+      }
+      elseif (!is_array($variables)) {
+        $message = $this->t('Log data is corrupted and cannot be unserialized: @message', ['@message' => Xss::filterAdmin($row->message)]);
+      }
+      // Message to translate with injected variables.
+      else {
+        // We deliberately suppress the backtrace.
+        $variables['@backtrace_string'] = "";
+        $message = $this->t(Xss::filterAdmin($row->message), $variables);
+      }
+    }
+    else {
+      $message = FALSE;
+    }
+    return $message;
   }
 
 }
