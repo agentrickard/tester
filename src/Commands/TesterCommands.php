@@ -206,7 +206,8 @@ class TesterCommands extends DrushCommands {
       $instance = $this->pluginManager->createInstance($id);
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
-        $urls = array_merge($urls, $instance->urls());
+        // @todo Make the limit configurable.
+        $urls = array_merge($urls, $instance->urls(500));
       }
     }
 

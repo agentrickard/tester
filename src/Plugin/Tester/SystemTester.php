@@ -18,7 +18,7 @@ class SystemTester extends PluginBase implements TesterPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function urls() {
+  public function urls($limit) {
     return [
       '/',
       '/admin',
