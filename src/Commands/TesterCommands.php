@@ -271,14 +271,17 @@ class TesterCommands extends DrushCommands {
    */
   protected function getErrors(int $count, int $initial) {
     $errors = [];
+    // We cannot filter by type accurately?
     $query = $this->database->select('watchdog', 'w')
-      ->fields('w', ['wid', 'message', 'variables'])
+      ->fields('w', ['wid', 'message', 'variables', 'type'])
       ->orderBy('wid', 'ASC')
       ->range($initial, $count);
     $result = $query->execute();
 
     foreach ($result as $dblog) {
-      $errors[$dblog->wid] = $this->formatMessage($dblog);
+      if ($dblog->type === 'php') {
+        $errors[$dblog->wid] = $this->formatMessage($dblog);
+      }
     }
 
     return $errors;
@@ -344,6 +347,7 @@ class TesterCommands extends DrushCommands {
   protected function getWatchdogCount() {
     $query = $this->database->select('watchdog', 'w')
       ->fields('w', ['wid'])
+      ->condition('w.type', 'php')
       ->orderBy('wid', 'DESC')
       ->range(0, 1);
     return $query->execute()->fetchField();
