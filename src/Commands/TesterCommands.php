@@ -163,8 +163,7 @@ class TesterCommands extends DrushCommands {
     }
 
     if ($choice === 'cancel') {
-      echo "Operation cancelled.\n";
-      return;
+      return $this->io()->success($this->t('Operation cancelled.'));
     }
 
     $this->io()->title("Crawling URLs");
@@ -183,7 +182,7 @@ class TesterCommands extends DrushCommands {
 
     $error_count = 0;
     if (empty($urls)) {
-      echo "No valid plugins were found. \n";
+      return $this->io()->error($this->t('No valid plugins were found.'));
     }
     else {
       $this->io()->progressStart(count($urls));
@@ -222,10 +221,18 @@ class TesterCommands extends DrushCommands {
 
     $this->tearDown();
 
-    $this->io()->text($this->t('Tested @count urls and found @error_count errors.', [
+    $message = $this->t('Tested @count urls and found @error_count errors.', [
       '@count' => count($urls),
       '@error_count' => $error_count,
-    ]));
+    ]);
+
+    if ($error_count > 0) {
+      $this->io()->error($message);
+    }
+    else {
+      $this->io()->success($message);
+    }
+
 
     return new RowsOfFields($rows);
   }
