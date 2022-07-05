@@ -107,14 +107,18 @@ class TesterCommands extends DrushCommands {
   }
 
   /**
-   * Test function.
+   * Lists valid plugins.
    *
-   * @command tester:test
-   * @aliases test
+   * @command tester:list
+   * @aliases tcl
    * @usage drush tester:test
    */
-  public function test() {
-    echo "Hello World\n";
+  public function listPlugins() {
+    $list = $this->chooseOptions();
+    unset($list['all']);
+    unset($list['cancel']);
+    $this->io()->text($this->t('Avaliable plugins:'));
+    return $this->io()->listing($list);
   }
 
   /**
@@ -130,6 +134,9 @@ class TesterCommands extends DrushCommands {
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
+   * @usage drush tester:crawl --test=node
+   * @usage drush tester:crawl example.com
+   * @usage drush tester:crawl example.com --test=node
    *
    * @field-labels
    *   path: Path
