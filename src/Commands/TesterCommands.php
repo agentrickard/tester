@@ -133,12 +133,16 @@ class TesterCommands extends DrushCommands {
    * @option limit
    *   The number of urls to crawl for _each_ plugin. Pass 0 to crawl all urls.
    *   Default value is 500.
+   * @option menus
+   *   The menus to crawl as a comma-separated list. If blank, the tester will
+   *   crawl the `main` and `footer` menus.
    *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
    * @usage drush tester:crawl --test=all
    * @usage drush tester:crawl --test=all --limit=10
+   * @usage drush tester:crawl --test=all --limit=10 --menus=main,header
    * @usage drush tester:crawl example.com
    * @usage drush tester:crawl example.com --test=node
    *
@@ -151,18 +155,16 @@ class TesterCommands extends DrushCommands {
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
    *   Table output.
    */
-  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500]) {
+  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500, 'menus' => 'main,footer']) {
     $rows = [];
     $this->setUp();
-    $choice = $options['test'];
-    $limit = $options['limit'];
 
     if (is_null($options['test'])) {
       $select = $this->chooseOptions();
-      $choice = $this->io()->choice($this->t('Select the tests to run:'), $select);
+      $options['test'] = $this->io()->choice($this->t('Select the tests to run:'), $select);
     }
 
-    if ($choice === 'cancel') {
+    if ($options['test'] === 'cancel') {
       return $this->io()->success($this->t('Operation cancelled.'));
     }
 
@@ -172,7 +174,7 @@ class TesterCommands extends DrushCommands {
       GLOBAL $base_url;
     }
 
-    $urls = array_unique($this->getUrls($choice, $limit));
+    $urls = array_unique($this->getUrls($options));
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
@@ -262,27 +264,25 @@ class TesterCommands extends DrushCommands {
   /**
    * Retrieves the list of URLs to test.
    *
-   * @param string $choice
-   *   The plugin to run.
-   * @param int $limit
-   *   The number of urls to crawl for each plugin.
+   * @param array $options
+   *   The options passed to the command.
    *
    * @return array
    *   An array of URLs.
    */
-  private function getUrls($choice = 'all', $limit = 500) {
+  private function getUrls(array $options) {
     $urls = [];
 
     $plugins = $this->pluginManager->getDefinitions();
 
     foreach (array_keys($plugins) as $id) {
-      if ($choice !== 'all' && $id !== $choice) {
+      if ($options['test'] !== 'all' && $id !== $options['test']) {
         continue;
       }
       $instance = $this->pluginManager->createInstance($id);
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
-        $urls = array_merge($urls, $instance->urls($limit));
+        $urls = array_merge($urls, $instance->urls($options));
       }
     }
 

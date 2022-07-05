@@ -21,24 +21,30 @@ class MenuTester extends PluginBase implements TesterPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function urls($limit) {
+  public function urls(array $options) {
+    $urls = [];
     // @todo Figure out how to inject this service.
     $storage = \Drupal::menuTree();
     $parameters = new MenuTreeParameters;
-    $tree = $storage->load('main', $parameters);
+    // Normalize menu options to array.
+    $options['menus'] = explode(',', $options['menus']);
 
-    $manipulators = [
-      [
-        'callable' => 'menu.default_tree_manipulators:generateIndexAndSort',
-      ],
-    ];
-    $tree = $storage->transform($tree, $manipulators);
+    foreach ($options['menus'] as $menu) {
+      $tree = $storage->load(trim($menu), $parameters);
 
-    $urls = [];
-    $this->buildUrls($tree, $urls);
+      $manipulators = [
+        [
+          'callable' => 'menu.default_tree_manipulators:generateIndexAndSort',
+        ],
+      ];
+      $tree = $storage->transform($tree, $manipulators);
 
-    if ($limit > 0 && count($urls) >= $limit) {
-      $urls = array_slice($urls, 0, $limit);
+      $this->buildUrls($tree, $urls);
+
+    }
+
+    if ($options['limit'] > 0 && count($urls) >= $options['limit']) {
+      $urls = array_slice($urls, 0, $options['limit']);
     }
 
     return $urls;
