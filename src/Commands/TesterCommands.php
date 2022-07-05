@@ -111,7 +111,7 @@ class TesterCommands extends DrushCommands {
    *
    * @command tester:list
    * @aliases tcl
-   * @usage drush tester:test
+   * @usage drush tester:list
    */
   public function listPlugins() {
     $list = $this->chooseOptions();
