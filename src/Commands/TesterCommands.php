@@ -130,11 +130,15 @@ class TesterCommands extends DrushCommands {
    *
    * @option test
    *   The test to run (optional). Pass `--test=all` to run all tests.
+   * @option limit
+   *   The number of urls to crawl for _each_ plugin. Pass 0 to crawl all urls.
+   *   Default value is 500.
    *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
    * @usage drush tester:crawl --test=all
+   * @usage drush tester:crawl --test=all --limit=10
    * @usage drush tester:crawl example.com
    * @usage drush tester:crawl example.com --test=node
    *
@@ -147,11 +151,12 @@ class TesterCommands extends DrushCommands {
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
    *   Table output.
    */
-  public function crawl($base_url = NULL, array $options = ['test' => NULL]) {
+  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500]) {
     $rows = [];
     $this->setUp();
-
     $choice = $options['test'];
+    $limit = $options['limit'];
+
     if (is_null($options['test'])) {
       $select = $this->chooseOptions();
       $choice = $this->io()->choice($this->t('Select the tests to run:'), $select);
@@ -168,7 +173,7 @@ class TesterCommands extends DrushCommands {
       GLOBAL $base_url;
     }
 
-    $urls = array_unique($this->getUrls($choice));
+    $urls = array_unique($this->getUrls($choice, $limit));
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
@@ -251,11 +256,13 @@ class TesterCommands extends DrushCommands {
    *
    * @param string $choice
    *   The plugin to run.
+   * @param int $limit
+   *   The number of urls to crawl for each plugin.
    *
    * @return array
    *   An array of URLs.
    */
-  private function getUrls($choice = 'all') {
+  private function getUrls($choice = 'all', $limit = 500) {
     $urls = [];
 
     $plugins = $this->pluginManager->getDefinitions();
@@ -268,7 +275,7 @@ class TesterCommands extends DrushCommands {
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
         // @todo Make the limit configurable.
-        $urls = array_merge($urls, $instance->urls(500));
+        $urls = array_merge($urls, $instance->urls($limit));
       }
     }
 

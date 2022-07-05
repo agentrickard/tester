@@ -25,7 +25,7 @@ class NodeTester extends PluginBase implements TesterPluginInterface {
 
     $urls = [];
     foreach ($nodes as $node) {
-      if (count($urls) > $limit) {
+      if ($limit > 0 && count($urls) >= $limit) {
         break;
       }
       $urls[] = $node->toUrl()->toString();
