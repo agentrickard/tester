@@ -129,12 +129,12 @@ class TesterCommands extends DrushCommands {
    *   If not provided, the global $base_url value will be used.
    *
    * @option test
-   *   The test to run. (Optional). Pass --test=all to run all tests.
+   *   The test to run (optional). Pass `--test=all` to run all tests.
    *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
-   * @usage drush tester:crawl --test=node
+   * @usage drush tester:crawl --test=all
    * @usage drush tester:crawl example.com
    * @usage drush tester:crawl example.com --test=node
    *
