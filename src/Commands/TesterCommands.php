@@ -117,7 +117,7 @@ class TesterCommands extends DrushCommands {
     $list = $this->chooseOptions();
     unset($list['all']);
     unset($list['cancel']);
-    $this->io()->text($this->t('Avaliable plugins:'));
+    $this->io()->title($this->t('Avaliable plugins:'));
     return $this->io()->listing($list);
   }
 
@@ -162,7 +162,7 @@ class TesterCommands extends DrushCommands {
       return;
     }
 
-    echo "Crawling URLs\n";
+    $this->io()->title("Crawling URLs");
 
     if (is_null($base_url)) {
       GLOBAL $base_url;
@@ -180,10 +180,13 @@ class TesterCommands extends DrushCommands {
       echo "No valid plugins were found. \n";
     }
     else {
+      $this->io()->progressStart(count($urls));
       foreach ($urls as $url) {
         $path = $base_url . $url;
         $this->setErrorStorage($path);
         $response = $this->httpClient->request('GET', $path, $options);
+        $this->io()->progressAdvance();
+
         $this->setErrorLog($path,['response' => $response->getStatusCode()]);
         $this->captureErrors($path);
 
@@ -195,6 +198,7 @@ class TesterCommands extends DrushCommands {
           'errors' => $this->getErrorLog($path, 'count') ?: 0,
         ];
         $rows[] = $row;
+
         if ($row['errors']) {
           $rows[]['path'] = '';
           foreach ($this->getErrorLog($path, 'errors') as $error) {
@@ -204,8 +208,9 @@ class TesterCommands extends DrushCommands {
           }
           $rows[]['path'] = '';
         }
-
       }
+
+      $this->io()->progressFinish();
     }
 
     $this->tearDown();
