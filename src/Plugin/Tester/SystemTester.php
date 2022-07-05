@@ -18,21 +18,16 @@ class SystemTester extends PluginBase implements TesterPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function urls($limit) {
-    $urls = [];
-
+  public function urls(array $options) {
     // @todo Are there more anon system urls?
-    $list = [
+    $urls = [
       '/',
       '/admin',
       '/foo-bar',
     ];
 
-    foreach ($list as $item) {
-      if ($limit > 0 && count($urls) >= $limit) {
-        break;
-      }
-      $urls[] = $item;
+    if ($options['limit'] > 0 && count($urls) >= $options['limit']) {
+      $urls = array_slice($urls, 0, $options['limit']);
     }
 
     return $urls;

@@ -18,17 +18,18 @@ class UserTester extends PluginBase implements TesterPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function urls($limit) {
+  public function urls(array $options) {
     // @todo Figure out how to inject this service.
     $storage = \Drupal::entityTypeManager()->getStorage('user');
     $users = $storage->loadMultiple();
 
     $urls = [];
     foreach ($users as $user) {
-      if ($limit > 0 && count($urls) >= $limit) {
-        break;
-      }
       $urls[] = $user->toUrl()->toString();
+    }
+
+    if ($options['limit'] > 0 && count($urls) >= $options['limit']) {
+      $urls = array_slice($urls, 0, $options['limit']);
     }
 
     return $urls;
