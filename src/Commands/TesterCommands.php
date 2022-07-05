@@ -221,6 +221,7 @@ class TesterCommands extends DrushCommands {
     }
 
     $this->tearDown();
+
     $this->io()->text($this->t('Tested @count urls and found @error_count errors.', [
       '@count' => count($urls),
       '@error_count' => $error_count,
@@ -274,7 +275,6 @@ class TesterCommands extends DrushCommands {
       $instance = $this->pluginManager->createInstance($id);
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
-        // @todo Make the limit configurable.
         $urls = array_merge($urls, $instance->urls($limit));
       }
     }
@@ -388,7 +388,7 @@ class TesterCommands extends DrushCommands {
   }
 
   /**
-   * Sets the errorLog for a request.
+   * Sets the error log for a request.
    *
    * @param $path
    *   The path being checked.
