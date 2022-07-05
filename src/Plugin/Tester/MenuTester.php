@@ -51,8 +51,15 @@ class MenuTester extends PluginBase implements TesterPluginInterface {
   }
 
   /**
-   * Recursive URL generator
+   * Creates a recursive URL generator.
+   *
+   * Each item in a menu tree may itself be a menu tree, so we loop through
+   * each one and then check for the presence of a `subtree`.
+   *
+   * @param array $tree
+   *   The menu tree.
    * @param array $urls
+   *   The array of urls to test.
    */
   public function buildUrls($tree, array &$urls) {
     foreach ($tree as $element) {

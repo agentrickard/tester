@@ -161,7 +161,7 @@ class TesterCommands extends DrushCommands {
 
     if (is_null($options['test'])) {
       $select = $this->chooseOptions();
-      $options['test'] = $this->io()->choice($this->t('Select the tests to run:'), $select);
+      $options['test'] = $this->io()->choice($this->t('Select the tests to run'), $select);
     }
 
     if ($options['test'] === 'cancel') {
