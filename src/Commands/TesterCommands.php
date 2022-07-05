@@ -176,6 +176,7 @@ class TesterCommands extends DrushCommands {
       'http_errors' => FALSE,
     ];
 
+    $error_count = 0;
     if (empty($urls)) {
       echo "No valid plugins were found. \n";
     }
@@ -202,6 +203,7 @@ class TesterCommands extends DrushCommands {
         if ($row['errors']) {
           $rows[]['path'] = '';
           foreach ($this->getErrorLog($path, 'errors') as $error) {
+            $error_count++;
             $rows[] = [
               'path' => ' • ' . trim(strip_tags($error), "."),
             ];
@@ -214,6 +216,10 @@ class TesterCommands extends DrushCommands {
     }
 
     $this->tearDown();
+    $this->io()->text($this->t('Tested @count urls and found @error_count errors.', [
+      '@count' => count($urls),
+      '@error_count' => $error_count,
+    ]));
 
     return new RowsOfFields($rows);
   }
