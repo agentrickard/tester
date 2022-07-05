@@ -140,6 +140,15 @@ class TesterCommands extends DrushCommands {
   public function crawl($base_url = NULL) {
     $rows = [];
     $this->setUp();
+
+    $select = $this->chooseOptions();
+    $choice = $this->io()->choice($this->t('Select the tests to run:'), $select);
+    if ($choice === 'cancel') {
+      echo "Operation cancelled\n";
+      return;
+    }
+
+
     echo "Crawling URLs\n";
 
     if (is_null($base_url)) {
@@ -190,6 +199,28 @@ class TesterCommands extends DrushCommands {
 
     return new RowsOfFields($rows);
   }
+
+  /**
+   * Chooses the plugins to run during a crawl.
+   */
+  public function chooseOptions() {
+    $options['all'] = $this->t('All');
+
+    $plugins = $this->pluginManager->getDefinitions();
+
+    foreach (array_keys($plugins) as $id) {
+      $instance = $this->pluginManager->createInstance($id);
+      $dependencies = $instance->dependencies();
+      if ($this->isAllowed($dependencies)) {
+        $id = $instance->getPluginId();
+        $options[$id] = $id;
+      }
+    }
+
+    $options['cancel'] = $this->t('Cancel');
+    return $options;
+  }
+
 
   /**
    * Retrieves the list of URLs to test.
