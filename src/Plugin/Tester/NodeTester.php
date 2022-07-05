@@ -6,7 +6,7 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\tester\Plugin\TesterPluginInterface;
 
 /**
- * Defines routes owned by the System module.
+ * Defines routes owned by the Node module.
  *
  * @TesterPlugin(
  *   id = "node",
