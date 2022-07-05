@@ -124,6 +124,9 @@ class TesterCommands extends DrushCommands {
    *   The base URL to use when crawling the site. No trailing slash.
    *   If not provided, the global $base_url value will be used.
    *
+   * @option test
+   *   The test to run. (Optional). Pass --test=all to run all tests.
+   *
    * @command tester:crawl
    * @aliases tester-crawl, tc
    * @usage drush tester:crawl, drush tc
@@ -137,17 +140,20 @@ class TesterCommands extends DrushCommands {
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
    *   Table output.
    */
-  public function crawl($base_url = NULL) {
+  public function crawl($base_url = NULL, array $options = ['test' => NULL]) {
     $rows = [];
     $this->setUp();
 
-    $select = $this->chooseOptions();
-    $choice = $this->io()->choice($this->t('Select the tests to run:'), $select);
-    if ($choice === 'cancel') {
-      echo "Operation cancelled\n";
-      return;
+    $choice = $options['test'];
+    if (is_null($options['test'])) {
+      $select = $this->chooseOptions();
+      $choice = $this->io()->choice($this->t('Select the tests to run:'), $select);
     }
 
+    if ($choice === 'cancel') {
+      echo "Operation cancelled.\n";
+      return;
+    }
 
     echo "Crawling URLs\n";
 
@@ -155,7 +161,7 @@ class TesterCommands extends DrushCommands {
       GLOBAL $base_url;
     }
 
-    $urls = array_unique($this->getUrls());
+    $urls = array_unique($this->getUrls($choice));
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
@@ -204,7 +210,7 @@ class TesterCommands extends DrushCommands {
    * Chooses the plugins to run during a crawl.
    */
   public function chooseOptions() {
-    $options['all'] = $this->t('All');
+    $options['all'] = $this->t('all');
 
     $plugins = $this->pluginManager->getDefinitions();
 
@@ -217,7 +223,7 @@ class TesterCommands extends DrushCommands {
       }
     }
 
-    $options['cancel'] = $this->t('Cancel');
+    $options['cancel'] = $this->t('cancel');
     return $options;
   }
 
@@ -225,15 +231,21 @@ class TesterCommands extends DrushCommands {
   /**
    * Retrieves the list of URLs to test.
    *
+   * @param string $choice
+   *   The plugin to run.
+   *
    * @return array
    *   An array of URLs.
    */
-  private function getUrls() {
+  private function getUrls($choice = 'all') {
     $urls = [];
 
     $plugins = $this->pluginManager->getDefinitions();
 
     foreach (array_keys($plugins) as $id) {
+      if ($choice !== 'all' && $id !== $choice) {
+        continue;
+      }
       $instance = $this->pluginManager->createInstance($id);
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
