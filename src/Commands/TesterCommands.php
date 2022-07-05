@@ -146,7 +146,7 @@ class TesterCommands extends DrushCommands {
       GLOBAL $base_url;
     }
 
-    $urls = $this->getUrls();
+    $urls = array_unique($this->getUrls());
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
@@ -206,7 +206,8 @@ class TesterCommands extends DrushCommands {
       $instance = $this->pluginManager->createInstance($id);
       $dependencies = $instance->dependencies();
       if ($this->isAllowed($dependencies)) {
-        $urls = array_merge($urls, $instance->urls());
+        // @todo Make the limit configurable.
+        $urls = array_merge($urls, $instance->urls(500));
       }
     }
 
