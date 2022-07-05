@@ -6,29 +6,29 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\tester\Plugin\TesterPluginInterface;
 
 /**
- * Defines routes owned by the Node module.
+ * Defines routes owned by the User module.
  *
  * @TesterPlugin(
- *   id = "node",
+ *   id = "user",
  * )
  *
  */
-class NodeTester extends PluginBase implements TesterPluginInterface {
+class UserTester extends PluginBase implements TesterPluginInterface {
 
   /**
    * {@inheritdoc}
    */
   public function urls($limit) {
     // @todo Figure out how to inject this service.
-    $storage = \Drupal::entityTypeManager()->getStorage('node');
-    $nodes = $storage->loadMultiple();
+    $storage = \Drupal::entityTypeManager()->getStorage('user');
+    $users = $storage->loadMultiple();
 
     $urls = [];
-    foreach ($nodes as $node) {
+    foreach ($users as $user) {
       if ($limit > 0 && count($urls) >= $limit) {
         break;
       }
-      $urls[] = $node->toUrl()->toString();
+      $urls[] = $user->toUrl()->toString();
     }
 
     return $urls;
@@ -40,7 +40,6 @@ class NodeTester extends PluginBase implements TesterPluginInterface {
   public function dependencies() {
     return [
       'modules' => [
-        'node',
         'user',
       ],
     ];
