@@ -391,7 +391,22 @@ class TesterCommands extends DrushCommands {
    * @return mixed|null
    */
   public function getErrorLog($path, $value) {
-    return $this->errorLog[$path][$value] ?: NULL;
+    $return = NULL;
+
+    // The default returns must match set types.
+    switch ($value) {
+      case 'response':
+        $return = $this->errorLog[$path][$value] ?: NULL;
+        break;
+      case 'errors':
+        $return = $this->errorLog[$path][$value] ?: [];
+        break;
+      default:
+        $return = $this->errorLog[$path][$value] ?: 0;
+        break;
+    }
+
+    return $return;
   }
 
   /**
