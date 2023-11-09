@@ -3,8 +3,6 @@
 namespace Drupal\tester\Plugin\Tester;
 
 use Drupal\Component\Plugin\PluginBase;
-use Drupal\Core\Link;
-use Drupal\Core\Menu\MenuLinkTreeElement;
 use Drupal\Core\Menu\MenuTreeParameters;
 use Drupal\tester\Plugin\TesterPluginInterface;
 
@@ -14,7 +12,6 @@ use Drupal\tester\Plugin\TesterPluginInterface;
  * @TesterPlugin(
  *   id = "menu",
  * )
- *
  */
 class MenuTester extends PluginBase implements TesterPluginInterface {
 
@@ -25,7 +22,7 @@ class MenuTester extends PluginBase implements TesterPluginInterface {
     $urls = [];
     // @todo Figure out how to inject this service.
     $storage = \Drupal::menuTree();
-    $parameters = new MenuTreeParameters;
+    $parameters = new MenuTreeParameters();
     // Normalize menu options to array.
     $options['menus'] = explode(',', $options['menus']);
 
@@ -69,7 +66,7 @@ class MenuTester extends PluginBase implements TesterPluginInterface {
         $string = $url->toString();
         // Ignore any token paths, which break logins.
         // And explicitly do not log out.
-        if (!str_contains($string, '?token=') && !str_contains($string, 'user/logout') ) {
+        if (!str_contains($string, '?token=') && !str_contains($string, 'user/logout')) {
           $urls[] = $string;
         }
       }

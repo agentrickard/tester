@@ -1,6 +1,11 @@
 <?php
 
-use \Drupal\tester_error_generator\TesterErrorClass;
+/**
+ * @file
+ * A small module that deliberately throws errors.
+ */
+
+use Drupal\tester_error_generator\TesterErrorClass;
 
 /**
  * Implements hook_page_top().
@@ -29,9 +34,10 @@ function tester_error_generator_page_top(&$page_top) {
       break;
 
     case 4:
-      $test = t('Generate class errors');
+      $text = t('Generate class errors');
       $testcase = new TesterErrorClass();
       $testcase->testDynamicProperty();
+      break;
 
     default:
       $text = t('The <em>tester_error_generator</em> module should not be used in production');

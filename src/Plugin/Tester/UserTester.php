@@ -11,7 +11,6 @@ use Drupal\tester\Plugin\TesterPluginInterface;
  * @TesterPlugin(
  *   id = "user",
  * )
- *
  */
 class UserTester extends PluginBase implements TesterPluginInterface {
 

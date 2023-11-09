@@ -11,7 +11,6 @@ use Drupal\tester\Plugin\TesterPluginInterface;
  * @TesterPlugin(
  *   id = "node",
  * )
- *
  */
 class NodeTester extends PluginBase implements TesterPluginInterface {
 

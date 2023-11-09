@@ -8,11 +8,9 @@ namespace Drupal\tester_error_generator;
 class TesterErrorClass {
 
   /**
-   * Sets a dynamic property, value.
-   *
-   * @return void
+   * Sets a dynamic property to trigger a warning.
    */
-  public function testDynamicProperty() {
+  public function testDynamicProperty(): void {
     $this->value = 'dynamic property error';
   }
 

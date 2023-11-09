@@ -4,12 +4,15 @@ namespace Drupal\tester\Plugin;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 
+/**
+ *
+ */
 interface TesterPluginInterface extends PluginInspectionInterface {
 
   /**
    * Returns an array of URLs for testing.
    *
-   * @param integer $options
+   * @param int $options
    *   The options passed to the command.
    *
    * @return array
@@ -27,4 +30,5 @@ interface TesterPluginInterface extends PluginInspectionInterface {
    * @return array
    */
   public function dependencies();
+
 }

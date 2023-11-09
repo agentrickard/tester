@@ -3,8 +3,6 @@
 namespace Drupal\tester\Commands;
 
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
-use Drupal\tester\TesterPluginManager;
-use Drush\Commands\DrushCommands;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
@@ -14,7 +12,8 @@ use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use GuzzleHttp\Cookie\SessionCookieJar;
+use Drupal\tester\TesterPluginManager;
+use Drush\Commands\DrushCommands;
 use GuzzleHttp\Cookie\CookieJar;
 
 /**
@@ -88,7 +87,7 @@ class TesterCommands extends DrushCommands {
   protected $errorLog = [];
 
   /**
-   * The admin user
+   * The admin user.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
@@ -113,7 +112,6 @@ class TesterCommands extends DrushCommands {
    *   The database connection.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   *
    */
   public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, ClientFactory $http_client_factory, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database, EntityTypeManagerInterface $entity_type_manager) {
     $this->pluginManager = $plugin_manager;
@@ -200,7 +198,7 @@ class TesterCommands extends DrushCommands {
     $this->io()->title("Crawling URLs");
 
     if (is_null($base_url)) {
-      GLOBAL $base_url;
+      global $base_url;
     }
 
     $urls = array_unique($this->getUrls($options));
@@ -246,7 +244,7 @@ class TesterCommands extends DrushCommands {
         $response = $this->httpClient->request('GET', $path, $options);
         $this->io()->progressAdvance();
 
-        $this->setErrorLog($path,['response' => $response->getStatusCode()]);
+        $this->setErrorLog($path, ['response' => $response->getStatusCode()]);
         $this->captureErrors($path);
 
         // @todo Move to a render function?
@@ -287,7 +285,6 @@ class TesterCommands extends DrushCommands {
       $this->io()->success($message);
     }
 
-
     return new RowsOfFields($rows);
   }
 
@@ -311,7 +308,6 @@ class TesterCommands extends DrushCommands {
     $options['cancel'] = $this->t('cancel');
     return $options;
   }
-
 
   /**
    * Retrieves the list of URLs to test.
@@ -358,7 +354,8 @@ class TesterCommands extends DrushCommands {
       switch ($type) {
         case "modules":
         default:
-          foreach ($extensions as $extension) {}
+          foreach ($extensions as $extension) {
+          }
           if (!$this->moduleHandler->moduleExists($extension)) {
             $return = FALSE;
           }
@@ -450,9 +447,11 @@ class TesterCommands extends DrushCommands {
       case 'response':
         $return = $this->errorLog[$path][$value] ?: NULL;
         break;
+
       case 'errors':
         $return = $this->errorLog[$path][$value] ?: [];
         break;
+
       default:
         $return = $this->errorLog[$path][$value] ?: 0;
         break;
@@ -484,7 +483,7 @@ class TesterCommands extends DrushCommands {
    *
    * We do this so we can query the errors specific to a path.
    *
-   * @return integer
+   * @return int
    *   The count.
    */
   protected function getWatchdogCount() {
