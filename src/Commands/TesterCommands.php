@@ -8,11 +8,15 @@ use Drush\Commands\DrushCommands;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\TransferStats;
 
 /**
@@ -58,7 +62,7 @@ class TesterCommands extends DrushCommands {
   protected $httpClient;
 
   /**
-   * The state interface.
+   * The state service.
    *
    * @var \Drupal\Core\State\StateInterface
    */
@@ -72,11 +76,25 @@ class TesterCommands extends DrushCommands {
   protected $database;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * The error count for the run.
    *
    * @var array
    */
   protected $errorLog = [];
+
+  /**
+   * The admin user
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $adminUser;
 
   /**
    * Constructs the class.
@@ -92,11 +110,14 @@ class TesterCommands extends DrushCommands {
    * @param \GuzzleHttp\Client $http_client
    *   The default http client.
    * @param \Drupal\Core\State\StateInterface $state
-   *   The state interface.
+   *   The state service.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   *
    */
-  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database) {
+  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database, EntityTypeManagerInterface $entity_type_manager) {
     $this->pluginManager = $plugin_manager;
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
@@ -104,6 +125,7 @@ class TesterCommands extends DrushCommands {
     $this->httpClient = $http_client;
     $this->state = $state;
     $this->database = $database;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -143,6 +165,7 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:crawl --test=all
    * @usage drush tester:crawl --test=all --limit=10
    * @usage drush tester:crawl --test=all --limit=10 --menus=main,header
+   * @usage drush tester:crawl --test=all --limit=10 --menus=admin,main,header --admin=1
    * @usage drush tester:crawl example.com
    * @usage drush tester:crawl example.com --test=node
    *
@@ -155,8 +178,9 @@ class TesterCommands extends DrushCommands {
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
    *   Table output.
    */
-  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500, 'menus' => 'main,footer']) {
+  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500, 'menus' => 'main,footer, admin', 'admin' => FALSE, 'user' => NULL, 'password' => NULL]) {
     $rows = [];
+    $this->adminUser = $this->entityTypeManager->getStorage('user')->load(1);
     $this->setUp();
 
     if (is_null($options['test'])) {
@@ -178,8 +202,10 @@ class TesterCommands extends DrushCommands {
 
     // We want to test 403 and 404 pages, so allow them.
     // See https://docs.guzzlephp.org/en/stable/request-options.html#http-errors
-    $options = [
+    $cookie_jar = new CookieJar();
+    $options += [
       'http_errors' => FALSE,
+      'cookies' => $cookie_jar,
     ];
 
     $error_count = 0;
@@ -187,6 +213,17 @@ class TesterCommands extends DrushCommands {
       return $this->io()->error($this->t('No valid plugins were found.'));
     }
     else {
+      if ($options['admin']) {
+        $this->io()->success($this->t('Logging in...'));
+        $options['form_params'] = [
+          'name' => 'admin',
+          'pass' => 'admin',
+        ];
+        $login = $this->httpClient->request('POST', $base_url . '/user/login', $options);
+        var_dump($login);
+        unset($options['form_params']);
+      }
+
       $this->io()->progressStart(count($urls));
       foreach ($urls as $url) {
         $path = $base_url . $url;
@@ -221,7 +258,7 @@ class TesterCommands extends DrushCommands {
       $this->io()->progressFinish();
     }
 
-    $this->tearDown();
+    $this->tearDown($options['admin']);
 
     $message = $this->t('Tested @count urls and found @error_count errors.', [
       '@count' => count($urls),
