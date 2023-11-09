@@ -11,13 +11,12 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
+use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\TransferStats;
 
 /**
  * Defines the class for our drush commands.
@@ -107,8 +106,8 @@ class TesterCommands extends DrushCommands {
    *   The module installer.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
-   * @param \GuzzleHttp\Client $http_client
-   *   The default http client.
+   * @param \Drupal\Core\Http\ClientFactory $http_client_factory
+   *   The http client factory service.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    * @param \Drupal\Core\Database\Connection $database
@@ -117,12 +116,12 @@ class TesterCommands extends DrushCommands {
    *   The entity type manager.
    *
    */
-  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Client $http_client, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(TesterPluginManager $plugin_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, ClientFactory $http_client_factory, ConfigFactoryInterface $config_factory, StateInterface $state, Connection $database, EntityTypeManagerInterface $entity_type_manager) {
     $this->pluginManager = $plugin_manager;
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
     $this->configFactory = $config_factory;
-    $this->httpClient = $http_client;
+    $this->httpClient = $http_client_factory->fromOptions(['cookies' => TRUE]);
     $this->state = $state;
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
@@ -218,12 +217,12 @@ class TesterCommands extends DrushCommands {
         $options['form_params'] = [
           'name' => 'admin',
           'pass' => 'admin',
+          'form_id' => 'user_login_form',
         ];
         $login = $this->httpClient->request('POST', $base_url . '/user/login', $options);
         var_dump($login);
         unset($options['form_params']);
       }
-
       $this->io()->progressStart(count($urls));
       foreach ($urls as $url) {
         $path = $base_url . $url;
