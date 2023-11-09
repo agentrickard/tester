@@ -1,6 +1,0 @@
-services:
-  tester.commands:
-    class: \Drupal\tester\Commands\TesterCommands
-    tags:
-      - { name: drush.command }
-    arguments: ['@plugin.manager.tester', '@module_handler', '@module_installer', '@http_client', '@config.factory', '@state', '@database']

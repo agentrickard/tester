@@ -4,13 +4,6 @@
   "type": "drupal-module",
   "license": "GPL-2.0+",
   "homepage": "https://github.com/agentrickard/tester",
-  "extra": {
-    "drush":{
-      "services": {
-        "drush.services.yml": "^9 || ^10"
-      }
-    }
-  },
   "require": {
   }
 }
