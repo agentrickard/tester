@@ -66,7 +66,12 @@ class MenuTester extends PluginBase implements TesterPluginInterface {
       $link = $element->link;
       $url = $link->getUrlObject();
       if (!$url->isExternal() && $link->isEnabled()) {
-        $urls[] = $url->toString();
+        $string = $url->toString();
+        // Ignore any token paths, which break logins.
+        // And explicitly do not log out.
+        if (!str_contains($string, '?token=') && !str_contains($string, 'user/logout') ) {
+          $urls[] = $string;
+        }
       }
       if ($element->subtree) {
         $this->buildUrls($element->subtree, $urls);

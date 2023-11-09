@@ -12,10 +12,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Http\ClientFactory;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\SessionCookieJar;
 use GuzzleHttp\Cookie\CookieJar;
 
 /**
@@ -121,7 +120,7 @@ class TesterCommands extends DrushCommands {
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
     $this->configFactory = $config_factory;
-    $this->httpClient = $http_client_factory->fromOptions(['cookies' => TRUE]);
+    $this->httpClient = $http_client_factory->fromOptions(['cookies' => TRUE, 'allow_redirects' => TRUE]);
     $this->state = $state;
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
@@ -156,7 +155,13 @@ class TesterCommands extends DrushCommands {
    *   Default value is 500.
    * @option menus
    *   The menus to crawl as a comma-separated list. If blank, the tester will
-   *   crawl the `main` and `footer` menus.
+   *   crawl the `admin`, `main` and `footer` menus (optional).
+   * @option admin
+   *   Boolean flag to log in with user `admin` and password `admin` (optional).
+   * @option user
+   *   The user name to log in with prior to the test (optional).
+   * @option password
+   *   The user password to log in with prior to the test (required if --user is set).
    *
    * @command tester:crawl
    * @aliases tester-crawl, tc
@@ -164,7 +169,8 @@ class TesterCommands extends DrushCommands {
    * @usage drush tester:crawl --test=all
    * @usage drush tester:crawl --test=all --limit=10
    * @usage drush tester:crawl --test=all --limit=10 --menus=main,header
-   * @usage drush tester:crawl --test=all --limit=10 --menus=admin,main,header --admin=1
+   * @usage drush tester:crawl --test=all --limit=10 --menus=admin,main,header --admin
+   * @usage drush tester:crawl --test=all --limit=10 --menus=admin,main,header --user=[USERNAME] --password=[PASSWORD]
    * @usage drush tester:crawl example.com
    * @usage drush tester:crawl example.com --test=node
    *
@@ -177,7 +183,7 @@ class TesterCommands extends DrushCommands {
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
    *   Table output.
    */
-  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500, 'menus' => 'main,footer, admin', 'admin' => FALSE, 'user' => NULL, 'password' => NULL]) {
+  public function crawl($base_url = NULL, array $options = ['test' => NULL, 'limit' => 500, 'menus' => 'main,footer,admin', 'admin' => FALSE, 'user' => NULL, 'password' => NULL]) {
     $rows = [];
     $this->adminUser = $this->entityTypeManager->getStorage('user')->load(1);
     $this->setUp();
@@ -206,27 +212,37 @@ class TesterCommands extends DrushCommands {
       'http_errors' => FALSE,
       'cookies' => $cookie_jar,
     ];
-
     $error_count = 0;
     if (empty($urls)) {
       return $this->io()->error($this->t('No valid plugins were found.'));
     }
     else {
+      // Login, if requested.
       if ($options['admin']) {
-        $this->io()->success($this->t('Logging in...'));
+        $this->io()->success($this->t("Logging in as 'admin' / 'admin'..."));
         $options['form_params'] = [
           'name' => 'admin',
           'pass' => 'admin',
           'form_id' => 'user_login_form',
         ];
-        $login = $this->httpClient->request('POST', $base_url . '/user/login', $options);
-        var_dump($login);
+        $this->httpClient->request('POST', $base_url . '/user/login', $options);
+        unset($options['form_params']);
+      }
+      elseif ($options['user'] && $options['password']) {
+        $this->io()->success($this->t("Logging in as '" . $options['user'] . "' using password..."));
+        $options['form_params'] = [
+          'name' => $options['user'],
+          'pass' => $options['password'],
+          'form_id' => 'user_login_form',
+        ];
+        $this->httpClient->request('POST', $base_url . '/user/login', $options);
         unset($options['form_params']);
       }
       $this->io()->progressStart(count($urls));
       foreach ($urls as $url) {
         $path = $base_url . $url;
         $this->setErrorStorage($path);
+
         $response = $this->httpClient->request('GET', $path, $options);
         $this->io()->progressAdvance();
 
