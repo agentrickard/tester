@@ -1,8 +1,9 @@
 <?php
 
-namespace Drupal\tester\Commands;
+namespace Drupal\tester\Drush\Commands;
 
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
+use Drupal\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
@@ -15,6 +16,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tester\TesterPluginManager;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\Cookie\CookieJar;
+
 
 /**
  * Defines the class for our drush commands.
@@ -122,6 +124,22 @@ class TesterCommands extends DrushCommands {
     $this->state = $state;
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container): self {
+    return new static(
+      $container->get('plugin.manager.tester'),
+      $container->get('module_handler'),
+      $container->get('module_installer'),
+      $container->get('http_client_factory'),
+      $container->get('config.factory'),
+      $container->get('state'),
+      $container->get('database'),
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
