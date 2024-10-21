@@ -2,4 +2,4 @@ name: 'PHP Version Tester'
 description: 'Tests a site for PHP errors and generates a log of issues.'
 package: Development
 type: module
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^10 || ^11
