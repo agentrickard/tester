@@ -1,8 +1,9 @@
 <?php
 
-namespace Drupal\tester\Commands;
+namespace Drupal\tester\Drush\Commands;
 
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
+use Drupal\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
@@ -17,6 +18,7 @@ use Drupal\tester\TesterPluginManager;
 use Drupal\user\Entity\User;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\Cookie\CookieJar;
+
 
 /**
  * Defines the class for our drush commands.
@@ -127,6 +129,22 @@ class TesterCommands extends DrushCommands {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container): self {
+    return new static(
+      $container->get('plugin.manager.tester'),
+      $container->get('module_handler'),
+      $container->get('module_installer'),
+      $container->get('http_client_factory'),
+      $container->get('config.factory'),
+      $container->get('state'),
+      $container->get('database'),
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
    * Lists valid plugins.
    *
    * @command tester:list
@@ -217,6 +235,10 @@ class TesterCommands extends DrushCommands {
       'http_errors' => FALSE,
       'cookies' => $cookie_jar,
     ];
+    // Set an explicit http version for the request.
+    if (!$options['version']) {
+      $options['version'] = 1.1;
+    }
     $error_count = 0;
     if (empty($urls)) {
       return $this->io()->error($this->t('No valid plugins were found.'));
