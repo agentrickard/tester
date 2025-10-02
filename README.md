@@ -2,7 +2,7 @@
 This project is now on drupal.org
 https://www.drupal.org/project/tester
 
-**This repositoryu will be archived on JAN 1, 2026.**
+**This repository will be archived on JAN 1, 2026.**
 
 Update your composer configuration:
 
