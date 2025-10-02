@@ -1,3 +1,15 @@
+# DEPRECATED REPOSITORY
+This project is now on drupal.org
+https://www.drupal.org/project/tester
+
+**This repositoryu will be archived on JAN 1, 2026.**
+
+Update your composer configuration:
+
+```
+composer require 'drupal/tester:^1.0'
+```
+
 Tester
 ===
 
